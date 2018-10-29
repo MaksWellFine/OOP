@@ -1,0 +1,5 @@
+﻿  Z1.cpp
+c:\c++ projects\labs_18-19\lab1\z1\z1\z1.cpp(105): warning C4996: 'getch': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getch. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.15063.0\ucrt\conio.h(452): note: see declaration of 'getch'
+  Z1.vcxproj -> C:\C++ projects\Labs_18-19\Lab1\Z1\Debug\Z1.exe
+  Z1.vcxproj -> C:\C++ projects\Labs_18-19\Lab1\Z1\Debug\Z1.pdb (Partial PDB)
