@@ -32,19 +32,25 @@ SOURCES += \
         databasehelper.cpp \
         databaseresponse.cpp \
         hospitaldatabasehelper.cpp \
-    user.cpp
+    user.cpp \
+    registrationwindow.cpp
 
 HEADERS += \
         loginwindow.h \
         databasehelper.h \
         databaseresponse.h \
         hospitaldatabasehelper.h \
-    user.h
+    user.h \
+    registrationwindow.h
 
 FORMS += \
-        loginwindow.ui
+        loginwindow.ui \
+    registrationwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resource.qrc

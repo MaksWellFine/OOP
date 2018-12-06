@@ -1,4 +1,5 @@
 #include "loginwindow.h"
+#include "registrationwindow.h"
 #include <QApplication>
 #include <hospitaldatabasehelper.h>
 #include <QMessageBox>
@@ -17,10 +18,22 @@ int main(int argc, char *argv[])
     User::ConnectDatabase(&db);
 
 
+    //LoginWindow w;
+    //w.show();
 
-    QMessageBox msg;
+    RegistrationWindow reg;
+    reg.show();
+    LoginWindow log;
+    if(db.GetUsers(HospitalDatabaseHelper::ARG_USERS_PRIVILEGIES+"%2=1").length()==0)
+        reg.show();
+    else
+        log.show();
 
-    User user("a1b2c34");
+    //QMessageBox msg;
+    //msg.setText(db.GetError());
+    //msg.exec();
+
+    /*User user("a1b2c34");
     user.IsLogined();
     user.AddPrivilegy(User::Privilegies::Patient);
     user.SaveToDB();
@@ -55,8 +68,6 @@ int main(int argc, char *argv[])
         msg.exec();
     }
 */
-    LoginWindow w;
-    w.show();    
 
     return a.exec();
 }
