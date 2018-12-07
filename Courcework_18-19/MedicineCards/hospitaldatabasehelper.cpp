@@ -79,16 +79,14 @@ void HospitalDatabaseHelper::SaveUser(User* user)
             QList<QList<QString>>{{user->GetCardId(), user->GetLogin(), user->GetPassword(), user->GetSurname(), user->GetName(), user->GetFatherName(),
             user->GetDateOfBirthd().toString("dd.MM.yyyy"), user->GetAddress(), user->GetPhoneNumber(), QString::number(user->GetPrivilegies())}});
     if(response->IsError())
-    {
-        QMessageBox box;
-        box.setText(response->GetError());
-        box.exec();
-        GetError();*/
-        Update(TABLE_USERS_NAME, QList<QString>{ARG_USERS_CARD_ID, ARG_USERS_LOGIN, ARG_USERS_PASSWORD, ARG_USERS_SURNAME, ARG_USERS_NAME,
+    {*/
+
+        //GetError();
+        DatabaseResponse *response = Update(TABLE_USERS_NAME, QList<QString>{ARG_USERS_CARD_ID, ARG_USERS_LOGIN, ARG_USERS_PASSWORD, ARG_USERS_SURNAME, ARG_USERS_NAME,
                     ARG_USERS_FATHER_NAME, ARG_USERS_DATE_OF_BIRTHD, ARG_USERS_ADDRESS, ARG_USERS_PHONE_NUMBER, ARG_USERS_PRIVILEGIES},
                     QList<QString>{user->GetCardId(), user->GetLogin(), user->GetPassword(), user->GetSurname(), user->GetName(), user->GetFatherName(),
-                                   user->GetDateOfBirthd().toString("dd.MM.yyyy"), user->GetAddress(), user->GetPhoneNumber(), QString::number(user->GetPrivilegies())},
-                    ARG_USERS_LOGIN+"="+"'"+user->GetLogin()+"'");
+                                   user->GetDateOfBirthd().toString(User::DATE_OF_BIRTHD_FORMAT), user->GetAddress(), user->GetPhoneNumber(), QString::number(user->GetPrivilegies())},
+                    ARG_USERS_LOGIN+"="+"'"+user->GetLogin()+"'");        
     //}
 }
 
@@ -106,7 +104,7 @@ QList<User> HospitalDatabaseHelper::GetUsers(QString condition)
     {
         User user(databaseQuery.value(record.indexOf(ARG_USERS_LOGIN)).toString(), databaseQuery.value(record.indexOf(ARG_USERS_PASSWORD)).toString(),
                     databaseQuery.value(record.indexOf(ARG_USERS_SURNAME)).toString(), databaseQuery.value(record.indexOf(ARG_USERS_NAME)).toString(),
-                    databaseQuery.value(record.indexOf(ARG_USERS_FATHER_NAME)).toString(), QDate::fromString(databaseQuery.value(record.indexOf(ARG_USERS_DATE_OF_BIRTHD)).toString(), "dd.MM.yyyy"),
+                    databaseQuery.value(record.indexOf(ARG_USERS_FATHER_NAME)).toString(), QDate::fromString(databaseQuery.value(record.indexOf(ARG_USERS_DATE_OF_BIRTHD)).toString(), User::DATE_OF_BIRTHD_FORMAT),
                     databaseQuery.value(record.indexOf(ARG_USERS_ADDRESS)).toString(), databaseQuery.value(record.indexOf(ARG_USERS_PHONE_NUMBER)).toString(),
                     databaseQuery.value(record.indexOf(ARG_USERS_PRIVILEGIES)).toInt());
         user.ConnectCard(databaseQuery.value(record.indexOf(ARG_USERS_CARD_ID)).toString());

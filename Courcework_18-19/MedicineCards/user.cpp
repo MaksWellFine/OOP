@@ -5,15 +5,26 @@
 
 HospitalDatabaseHelper* User::helper = nullptr;
 const QString User::DEFAULT_CARD_ID_VAL = "null";
+const QString User::DATE_OF_BIRTHD_FORMAT = "dd.MM.yyyy";
 
 void User::ConnectDatabase(HospitalDatabaseHelper *database)
 {
     helper = database;
 }
 
-User::User()
+User::User(User *user)
 {
-
+    login = user->GetLogin();
+    password = user->GetPassword();
+    surname = user->GetSurname();
+    name = user->GetName();
+    fatherName = user->GetFatherName();
+    address = user->GetAddress();
+    SetPhoneNumber(user->GetPhoneNumber());
+    dateOfBirthd = user->GetDateOfBirthd();
+    ConnectCard(user->GetCardId());
+    privilegies = user->GetPrivilegies();
+    isLogined = user->IsLogined();
 }
 
 User::User(QString cardId)
@@ -111,6 +122,14 @@ QString& User::GetAddress(){ return address;}
 QString& User::GetPhoneNumber(){ return phoneNumber;}
 int User::GetPrivilegies(){return privilegies;}
 
+void User::SetPassword(QString str){ password = str;}
+void User::SetSurname(QString str){ surname = str;}
+void User::SetName(QString str){name = str;}
+void User::SetFatherName(QString str){ fatherName = str; }
+void User::SetDateOfBirthd(QDate date){ dateOfBirthd = date; }
+void User::SetAddress(QString str){ address = str; }
+
+
 bool User::IsLogined()
 {
     return isLogined;
@@ -125,6 +144,7 @@ bool User::Login()
 bool User::SaveToDB()
 {
     if(helper == nullptr) return false;
+
     helper->SaveUser(this);
     return !helper->IsErrorExists();
 }

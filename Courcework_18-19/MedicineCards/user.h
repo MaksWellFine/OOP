@@ -15,8 +15,7 @@ class User
 {
     static HospitalDatabaseHelper* helper;
 
-    const static int privilegiesCount = 4;
-    const static QString DEFAULT_CARD_ID_VAL;
+    const static QString DEFAULT_CARD_ID_VAL;    
 
     QString cardId = DEFAULT_CARD_ID_VAL;
     bool isCardConnected;
@@ -33,11 +32,12 @@ class User
 
     bool isLogined;
 
-    void SetPhoneNumber(QString numberStr);
 public:
+    const static int privilegiesCount = 4;
+    const static QString DATE_OF_BIRTHD_FORMAT;
     enum Privilegies{ Admin=0, Recorder=1, Doctor=2, Patient=3 };
 
-    User();
+    User(User *user);
     User(QString cardId);
     User(QString login, QString password);
     User(QString login, QString password, QString surname, QString name, QString fatherName,
@@ -60,6 +60,14 @@ public:
     QString& GetAddress();
     QString& GetPhoneNumber();
     int GetPrivilegies();
+
+    void SetPassword(QString str);
+    void SetSurname(QString str);
+    void SetName(QString str);
+    void SetFatherName(QString str);
+    void SetDateOfBirthd(QDate date);
+    void SetAddress(QString str);
+    void SetPhoneNumber(QString numberStr);
 
     bool IsLogined();
     bool Login();

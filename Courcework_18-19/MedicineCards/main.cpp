@@ -21,7 +21,9 @@ int main(int argc, char *argv[])
     //LoginWindow w;
     //w.show();
 
-    RegistrationWindow reg;
+    QList<User> users = db.GetUsers("");
+
+    RegistrationWindow reg(nullptr, &users[0], &users[1]);
     reg.show();
     LoginWindow log;
     if(db.GetUsers(HospitalDatabaseHelper::ARG_USERS_PRIVILEGIES+"%2=1").length()==0)
