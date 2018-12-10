@@ -4,7 +4,7 @@
 #include <QWidget>
 
 namespace Ui {
-class WidgetShadow;
+class WidgetSchedule;
 }
 
 class WidgetSchedule : public QWidget
