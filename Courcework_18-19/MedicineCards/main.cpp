@@ -18,12 +18,13 @@ int main(int argc, char *argv[])
     User::ConnectDatabase(&db);
 
 
-    //LoginWindow w;
-    //w.show();
+    db.SaveSpeciality("Ортопед");
+    db.SaveSpeciality("Лор");
+    db.SaveSpeciality("Окуліст");
+    db.SaveSpeciality("Хірург");
 
     QList<User> users = db.GetUsers("");
-
-    RegistrationWindow reg(nullptr, &users[0], &users[1]);
+    RegistrationWindow reg(nullptr, &users[0], &users[0]);
     reg.show();
     LoginWindow log;
     if(db.GetUsers(HospitalDatabaseHelper::ARG_USERS_PRIVILEGIES+"%2=1").length()==0)

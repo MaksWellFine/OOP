@@ -33,7 +33,8 @@ SOURCES += \
         databaseresponse.cpp \
         hospitaldatabasehelper.cpp \
     user.cpp \
-    registrationwindow.cpp
+    registrationwindow.cpp \
+    doctor.cpp
 
 HEADERS += \
         loginwindow.h \
@@ -41,7 +42,8 @@ HEADERS += \
         databaseresponse.h \
         hospitaldatabasehelper.h \
     user.h \
-    registrationwindow.h
+    registrationwindow.h \
+    doctor.h
 
 FORMS += \
         loginwindow.ui \

@@ -5,20 +5,23 @@
 
 #include "hospitaldatabasehelper.h"
 #include "databaseresponse.h"
+#include "doctor.h"
 
 #include <QString>
 #include <QDateTime>
 
 class HospitalDatabaseHelper;
-
+class Doctor;
 class User
 {
     static HospitalDatabaseHelper* helper;
 
     const static QString DEFAULT_CARD_ID_VAL;    
 
+    Doctor* doctor;
+
     QString cardId = DEFAULT_CARD_ID_VAL;
-    bool isCardConnected;
+    bool isCardConnected = false;
 
     QString login;
     QString password;
@@ -30,7 +33,7 @@ class User
     QString phoneNumber;
     int privilegies;
 
-    bool isLogined;
+    bool isLogined;    
 
 public:
     const static int privilegiesCount = 4;
@@ -43,7 +46,10 @@ public:
     User(QString login, QString password, QString surname, QString name, QString fatherName,
          QDate dateOfBirthd, QString address, QString phoneNumber, int privilegies = 0);
 
-    void AddPrivilegy(Privilegies privilegy);
+    void AddPrivilegyAdmin();
+    void AddPrivilegyRecorder();
+    void AddPrivilegyDoctor(QString speciality = "", QList<struct WorkTime> workTimes = {});
+    void AddPrivilegyPatient();
     void RemovePrivilegy(Privilegies privilegy);
     bool IsPrivilegyExist(Privilegies pr);
 
@@ -51,14 +57,14 @@ public:
     bool IsCardConnected();
 
     QString GetCardId();
-    QString& GetLogin();
-    QString& GetPassword();
-    QString& GetSurname();
-    QString& GetName();
-    QString& GetFatherName();
-    QDate& GetDateOfBirthd();
-    QString& GetAddress();
-    QString& GetPhoneNumber();
+    QString GetLogin();
+    QString GetPassword();
+    QString GetSurname();
+    QString GetName();
+    QString GetFatherName();
+    QDate GetDateOfBirthd();
+    QString GetAddress();
+    QString GetPhoneNumber();
     int GetPrivilegies();
 
     void SetPassword(QString str);
@@ -72,10 +78,16 @@ public:
     bool IsLogined();
     bool Login();
 
+    class Doctor* GetDoctor();
+
     static void ConnectDatabase(HospitalDatabaseHelper *database);
+    HospitalDatabaseHelper* GetDatabase();
 
     bool SaveToDB();
     bool LoadFromDB();
+
+private:
+    void AddPrivilegy(Privilegies privilegy);
 };
 
 #endif // USER_H

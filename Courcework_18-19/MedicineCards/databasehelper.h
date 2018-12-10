@@ -12,14 +12,13 @@ class DatabaseHelper
     QString databaseName;
 
     QString databaseError;
-    bool isError = false;
-
-    void SetError(QString);
-    DatabaseResponse* CreateDatabaseResponse(QString error);
-    DatabaseResponse* CreateDatabaseResponse(QSqlRecord record);
+    bool isError = false;            
 
 protected:
     QSqlQuery databaseQuery;
+    void SetError(QString);
+    DatabaseResponse* CreateDatabaseResponse(QString error);
+    DatabaseResponse* CreateDatabaseResponse(QSqlRecord record);
 
 public:
     DatabaseHelper(QString);
@@ -34,6 +33,7 @@ public:
     DatabaseResponse* Insert(QString table, QList<QString> arguments, QList<QList<QString>> records);
     DatabaseResponse* Update(QString table, QList<QString> arguments, QList<QString> records, QString condition);
     DatabaseResponse* Select(QString table, QList<QString> arguments, QString condition);
+    DatabaseResponse* Delete(QString table, QString condition);
 };
 
 #endif // DATABASEHELPER_H

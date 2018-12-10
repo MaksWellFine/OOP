@@ -1,3 +1,4 @@
+#include "doctor.h"
 #include "user.h"
 
 #include <QMessageBox>
@@ -10,6 +11,11 @@ const QString User::DATE_OF_BIRTHD_FORMAT = "dd.MM.yyyy";
 void User::ConnectDatabase(HospitalDatabaseHelper *database)
 {
     helper = database;
+}
+
+HospitalDatabaseHelper* User::GetDatabase()
+{
+    return helper;
 }
 
 User::User(User *user)
@@ -52,6 +58,8 @@ User::User(QString login, QString password, QString surname, QString name, QStri
     this->address = address;
     SetPhoneNumber(phoneNumber);
     this->privilegies = privilegies;
+    if(IsPrivilegyExist(Privilegies::Doctor))
+        AddPrivilegyDoctor();
 }
 
 void User::ConnectCard(QString id, bool isCheckUnique)
@@ -102,6 +110,43 @@ void User::AddPrivilegy(Privilegies privilegy)
     privilegies |= 1 << privilegy;
 }
 
+void User::AddPrivilegyAdmin()
+{
+    AddPrivilegy(Privilegies::Admin);
+}
+
+void User::AddPrivilegyRecorder()
+{
+    AddPrivilegy(Privilegies::Recorder);
+}
+
+void User::AddPrivilegyDoctor(QString speciality, QList<WorkTime> workTimes)
+{
+    AddPrivilegy(Privilegies::Doctor);
+    bool result = true;
+    QList<class Doctor> doctors = helper->GetDoctors(this);
+    if(doctors.length()!=0)
+        doctor = new class Doctor(&doctors[0]);
+    else
+    {
+        if(speciality != "" && workTimes.length()!=0)
+        {
+            doctor = Doctor::CreateDoctor(this, speciality, workTimes);
+            if(doctor==nullptr) result = false;
+            if(!doctor->SaveToDB()) result = false;
+        }else result = false;
+    }
+    if(!result)
+    {
+        RemovePrivilegy(Privilegies::Doctor);
+    }
+}
+
+void User::AddPrivilegyPatient()
+{
+    AddPrivilegy(Privilegies::Patient);
+}
+
 void User::RemovePrivilegy(Privilegies privilegy)
 {
     privilegies &= ~(1 << privilegy);
@@ -112,14 +157,14 @@ bool User::IsPrivilegyExist(Privilegies pr)
     return (privilegies >> pr) & 1;
 }
 
-QString& User::GetLogin() { return login;}
-QString& User::GetPassword(){ return password;}
-QString& User::GetSurname(){ return  surname;}
-QString& User::GetName(){return name;}
-QString& User::GetFatherName(){ return fatherName;}
-QDate& User::GetDateOfBirthd(){ return dateOfBirthd;}
-QString& User::GetAddress(){ return address;}
-QString& User::GetPhoneNumber(){ return phoneNumber;}
+QString User::GetLogin() { return login;}
+QString User::GetPassword(){ return password;}
+QString User::GetSurname(){ return  surname;}
+QString User::GetName(){return name;}
+QString User::GetFatherName(){ return fatherName;}
+QDate User::GetDateOfBirthd(){ return dateOfBirthd;}
+QString User::GetAddress(){ return address;}
+QString User::GetPhoneNumber(){ return phoneNumber;}
 int User::GetPrivilegies(){return privilegies;}
 
 void User::SetPassword(QString str){ password = str;}
@@ -139,6 +184,14 @@ bool User::Login()
 {
     isLogined = LoadFromDB();
     return isLogined;
+}
+
+Doctor* User::GetDoctor()
+{
+    if(IsPrivilegyExist(Privilegies::Doctor))
+        return doctor;
+    else
+        return nullptr;
 }
 
 bool User::SaveToDB()

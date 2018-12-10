@@ -20,11 +20,12 @@ RegistrationWindow::RegistrationWindow(QWidget *parent, User *creator, User *use
     connect(ui->butFri, SIGNAL(released()), this, SLOT(ChooseDayClick()));
     connect(ui->butSat, SIGNAL(released()), this, SLOT(ChooseDayClick()));
     connect(ui->butSun, SIGNAL(released()), this, SLOT(ChooseDayClick()));
+    daysStateBtns = {ui->butMon,ui->butTue,ui->butWed,ui->butThu,ui->butFri,ui->butSat,ui->butSun};
 
     connect(ui->checkBoxDoctor, SIGNAL(released()), this, SLOT(ChoosedDoctor()));
 
     connect(ui->butCancel, SIGNAL(released()), this, SLOT(CancelClick()));
-    connect(ui->butSave, SIGNAL(released()), this, SLOT(SaveClick()));
+    connect(ui->butSave, SIGNAL(released()), this, SLOT(SaveClick()));   
 
     if(creator==nullptr)
     {
@@ -34,7 +35,9 @@ RegistrationWindow::RegistrationWindow(QWidget *parent, User *creator, User *use
         ui->checkBoxPatient->setEnabled(true);
         ui->checkBoxDoctor->setEnabled(true);
     }else
-    {
+    {        
+        ui->comboBox->addItems(QStringList::fromStdList(
+                                   creator->GetDatabase()->GetSpecialities("").toStdList()));
         if(creator->IsPrivilegyExist(User::Privilegies::Admin))
         {
             ui->checkBoxDoctor->setEnabled(true);
@@ -75,16 +78,24 @@ RegistrationWindow::~RegistrationWindow()
 
 void RegistrationWindow::ChooseDayClick()
 {
-    QAbstractButton* but = static_cast<QAbstractButton *>(sender());
-    QPalette pal = but->palette();
+    QAbstractButton* but = static_cast<QAbstractButton *>(sender());    
     int index = but->maximumHeight()/1000-1;
     daysState[index] = !daysState[index];
-    if(daysState[index])
-        pal.setColor(QPalette::Button, QColor(Qt::lightGray));
-    else
-        pal.setColor(QPalette::Button, QColor(Qt::transparent));
-    but->setPalette(pal);
-    but->update();
+    RefreshDaysStates();
+}
+
+void RegistrationWindow::RefreshDaysStates()
+{
+    for(int i = 0; i < 7; i++)
+    {
+        QPalette pal = daysStateBtns[i]->palette();
+        if(daysState[i])
+            pal.setColor(QPalette::Button, QColor(Qt::lightGray));
+        else
+            pal.setColor(QPalette::Button, QColor(Qt::transparent));
+        daysStateBtns[i]->setPalette(pal);
+        daysStateBtns[i]->update();
+    }
 }
 
 void RegistrationWindow::ChoosedDoctor()
@@ -103,13 +114,35 @@ void RegistrationWindow::LoadFromUser(User *user)
     ui->editAddress->setText(user->GetAddress());
     ui->editDateOfBirthd->setDate(user->GetDateOfBirthd());
     ui->editPhoneNumber->setText(user->GetPhoneNumber());
-    if(user->IsCardConnected()) ui->editCardId->setText(user->GetCardId());
+    if(user->IsCardConnected())
+    {
+        isCardConnected = true;
+        ui->editCardId->setText(user->GetCardId());
+    }
+    if(user->IsPrivilegyExist(User::Privilegies::Admin))
+    {
+        isAdmin = true;
+    }
 
     if(user->IsPrivilegyExist(User::Privilegies::Doctor))
     {
         ui->checkBoxDoctor->setChecked(true);
         ui->checkBoxDoctor->setEnabled(false);
         ui->widgetDoctor->setEnabled(true);
+        if(user->GetDoctor()!=nullptr)
+        {
+            ui->comboBox->setCurrentText(user->GetDoctor()->GetSpeciality());
+            QList<WorkTime> workTimes = user->GetDoctor()->GetWorkTimes();
+            if(workTimes.length() > 0)
+            {
+                ui->editCabinet->setText(workTimes[0].cabinet);
+                ui->editTimeStartWork->setTime(workTimes[0].workTime.first);
+                ui->editTimeEndWork->setTime(workTimes[0].workTime.second);
+            }
+            for(int i = 0; i < workTimes.length(); i++)
+                daysState[workTimes[i].workDay] = true;
+            RefreshDaysStates();
+        }
     }
     if(user->IsPrivilegyExist(User::Privilegies::Recorder))
     {
@@ -123,39 +156,46 @@ void RegistrationWindow::LoadFromUser(User *user)
     }
 }
 
-void RegistrationWindow::LoadToUser(User *user)
+void RegistrationWindow::LoadToUser(User **user)
 {
-    if(user==nullptr)
+    if(*user==nullptr)
     {
-        user = new User(ui->editLogin->text(), ui->editPassword->text(), ui->editSurname->text(), ui->editName->text(),
-                        ui->editFatherName->text(), QDate::fromString(ui->editDateOfBirthd->text(), User::DATE_OF_BIRTHD_FORMAT),
+        *user = new User(ui->editLogin->text(), ui->editPassword->text(), ui->editSurname->text(), ui->editName->text(),
+                        ui->editFatherName->text(), ui->editDateOfBirthd->date(),
                         ui->editAddress->text(), ui->editPhoneNumber->text());
-        if(isCardConnected) user->ConnectCard(ui->editCardId->text(), true);
+        if(isCardConnected) (*user)->ConnectCard(ui->editCardId->text(), true);
 
     }else
     {
-        user->SetPassword(ui->editPassword->text());
-        user->SetSurname(ui->editSurname->text());
-        user->SetName(ui->editName->text());
-        user->SetFatherName(ui->editFatherName->text());
-        user->SetAddress(ui->editAddress->text());
-        user->SetPhoneNumber(ui->editPhoneNumber->text());
-        user->SetDateOfBirthd(QDate::fromString(ui->editDateOfBirthd->text(), User::DATE_OF_BIRTHD_FORMAT));
+        (*user)->SetPassword(ui->editPassword->text());
+        (*user)->SetSurname(ui->editSurname->text());
+        (*user)->SetName(ui->editName->text());
+        (*user)->SetFatherName(ui->editFatherName->text());
+        (*user)->SetAddress(ui->editAddress->text());
+        (*user)->SetPhoneNumber(ui->editPhoneNumber->text());
+        (*user)->SetDateOfBirthd(ui->editDateOfBirthd->date());
     }
     if(ui->checkBoxRecorder->isChecked())
-        user->AddPrivilegy(User::Privilegies::Recorder);
+        (*user)->AddPrivilegyRecorder();
     else
-        user->RemovePrivilegy(User::Privilegies::Recorder);
+        (*user)->RemovePrivilegy(User::Privilegies::Recorder);
     if(ui->checkBoxDoctor->isChecked())
-        user->AddPrivilegy(User::Privilegies::Doctor);
+    {
+        QString cabinet = ui->editCabinet->text();
+        QPair<QTime, QTime> time(ui->editTimeStartWork->time(), ui->editTimeEndWork->time());
+        QList<WorkTime> workTimes;
+        for(int i = 0; i < 7; i++)
+            if(daysState[i]) workTimes.append(WorkTime(cabinet, time, (WorkTime::Day)i));
+        (*user)->AddPrivilegyDoctor(ui->comboBox->currentText(), workTimes);
+    }
     else
-        user->RemovePrivilegy(User::Privilegies::Doctor);
+        (*user)->RemovePrivilegy(User::Privilegies::Doctor);
     if(ui->checkBoxPatient->isChecked())
-        user->AddPrivilegy(User::Privilegies::Patient);
+        (*user)->AddPrivilegyPatient();
     else
-        user->RemovePrivilegy(User::Privilegies::Patient);
+        (*user)->RemovePrivilegy(User::Privilegies::Patient);
 
-    if(isAdmin) user->AddPrivilegy(User::Privilegies::Admin);
+    if(isAdmin) (*user)->AddPrivilegyAdmin();
 
     //user->Login();
 }
@@ -165,10 +205,22 @@ void RegistrationWindow::SaveClick()
     QMessageBox msg;
     msg.setWindowTitle("Результат збереження");
 
-    LoadToUser(userToSave);
+    LoadToUser(&userToSave);
 
-    if(userToSave->SaveToDB())
+    if(isCardConnected != userToSave->IsCardConnected())
     {
+        msg.setText("Дана картка уже викорстовується!");
+        msg.exec();
+        return;
+    }
+    if(ui->checkBoxDoctor->isChecked() && userToSave->GetDoctor()==nullptr)
+    {
+        msg.setText("Помилка при додаванні привілегії лікаря!");
+        msg.exec();
+        return;
+    }
+    if(userToSave->SaveToDB())
+    {        
         if(userToSave->Login())
         {
             msg.setText("Кориcтувача успішно збережено!");

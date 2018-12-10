@@ -24,10 +24,13 @@ private:
     bool isAdmin = false;
     bool isCardConnected = false;
     bool daysState[7]{false,false,false,false,false,false,false};
-    User *userToSave;
+    QList<QPushButton*> daysStateBtns;
+    User *userToSave = nullptr;
+
+    void RefreshDaysStates();
 
     void LoadFromUser(User *user);
-    void LoadToUser(User *user);
+    void LoadToUser(User **user);
 
 private slots:
     void ChooseDayClick();

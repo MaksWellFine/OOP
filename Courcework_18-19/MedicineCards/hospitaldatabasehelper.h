@@ -4,13 +4,18 @@
 #define HOSPITALDATABASEHELPER_H
 
 #include "databasehelper.h"
+#include "doctor.h"
 #include "user.h"
 
 #include <QCoreApplication>
 
 class User;
+class Doctor;
+struct WorkTime;
 class HospitalDatabaseHelper: public DatabaseHelper
-{    
+{
+    void RefreshWorkTimes(int userId, QList<WorkTime> workTimesNew);
+    QList<WorkTime> GetWorkTimes(int doctorId);
 public:
     const static QString DB_NAME;
 
@@ -29,7 +34,7 @@ public:
 
     const static QString TABLE_DOCTORS_NAME;
     const static QString ARG_DOCTORS_ID;
-    const static QString ARG_DOCTORS_USERS_ID;
+    const static QString ARG_DOCTORS_USER_ID;
     const static QString ARG_DOCTORS_SPECIALITY_ID;
 
     const static QString TABLE_SPECIALITIES_NAME;
@@ -49,7 +54,7 @@ public:
     const static QString ARG_DOCTORS_WORKTIME_DOCTOR_ID;
     const static QString ARG_DOCTORS_WORKTIME_START_WORK_AT;
     const static QString ARG_DOCTORS_WORKTIME_END_WORK_AT;
-    const static QString ARG_DOCTORS_WORKTIME_WORK_DATE;
+    const static QString ARG_DOCTORS_WORKTIME_WORK_DAY;
     const static QString ARG_DOCTORS_WORKTIME_CABINET;
 
     HospitalDatabaseHelper();
@@ -57,7 +62,16 @@ public:
 
     void SaveUser(User* user);
     QList<User> GetUsers(QString condition);
-    void DeleteUser(QList<QString> str, QList<QString> key);
+    void DeleteUser(User* user);
+
+    void SaveSpeciality(QString spec);
+    QList<QString> GetSpecialities(QString condition);
+    void DeleteSpeciality(QString spec);
+
+    void SaveDoctor(Doctor* doctor);
+    QList<Doctor> GetDoctors(QString condition, User *user=nullptr);
+    QList<Doctor> GetDoctors(User *user);
+    void DeleteDoctor(Doctor* doctor);
 };
 
 #endif // HOSPITALDATABASEHELPER_H

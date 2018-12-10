@@ -169,3 +169,24 @@ DatabaseResponse* DatabaseHelper::Select(QString table, QList<QString> arguments
     else
         return CreateDatabaseResponse(databaseQuery.record());
 }
+
+DatabaseResponse* DatabaseHelper::Delete(QString table, QString condition)
+{
+    if(!database.isOpen()) return CreateDatabaseResponse("Problems with database!");
+
+    QString query = "DELETE FROM %1 %2;";
+
+    QString conditionsStr = "WHERE ";
+    if(condition.length() < 1) conditionsStr = "";
+    else conditionsStr.append(condition);
+
+    query = query.arg(table)
+            .arg(conditionsStr);
+    databaseQuery = database.exec(query);
+    bool isSuccess = (databaseQuery.lastError().text() == " ");
+
+    if(!isSuccess)
+        return CreateDatabaseResponse("Error when deleting records: " + databaseQuery.lastError().text() + ", query: " + query);
+    else
+        return CreateDatabaseResponse(databaseQuery.record());
+}
