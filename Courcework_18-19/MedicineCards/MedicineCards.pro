@@ -34,7 +34,9 @@ SOURCES += \
         hospitaldatabasehelper.cpp \
     user.cpp \
     registrationwindow.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    widgetspecialty.cpp \
+    widgetschedule.cpp
 
 HEADERS += \
         loginwindow.h \
@@ -43,12 +45,16 @@ HEADERS += \
         hospitaldatabasehelper.h \
     user.h \
     registrationwindow.h \
-    mainwindow.h
+    mainwindow.h \
+    widgetspecialty.h \
+    widgetschedule.h
 
 FORMS += \
         loginwindow.ui \
     registrationwindow.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    widgetspecialty.ui \
+    widgetschedule.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
