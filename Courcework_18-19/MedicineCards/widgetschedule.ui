@@ -75,13 +75,13 @@
       <bool>false</bool>
      </property>
      <property name="rowCount">
-      <number>10</number>
+      <number>1</number>
      </property>
      <property name="columnCount">
       <number>2</number>
      </property>
      <attribute name="horizontalHeaderVisible">
-      <bool>true</bool>
+      <bool>false</bool>
      </attribute>
      <attribute name="horizontalHeaderCascadingSectionResizes">
       <bool>true</bool>
@@ -115,19 +115,6 @@
        <string>1</string>
       </property>
      </row>
-     <row>
-      <property name="text">
-       <string>2</string>
-      </property>
-     </row>
-     <row/>
-     <row/>
-     <row/>
-     <row/>
-     <row/>
-     <row/>
-     <row/>
-     <row/>
      <column>
       <property name="text">
        <string>Час прийому</string>
