@@ -32,6 +32,9 @@ private:
     void LoadFromUser(User *user);
     void LoadToUser(User **user);
 
+    bool IsUserInfoCorrect();
+    void SetEditTextErrorState(QWidget* widget, bool isError = true);
+
 private slots:
     void ChooseDayClick();
     void ChoosedDoctor();

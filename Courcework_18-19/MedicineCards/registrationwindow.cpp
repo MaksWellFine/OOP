@@ -205,7 +205,12 @@ void RegistrationWindow::SaveClick()
     QMessageBox msg;
     msg.setWindowTitle("Результат збереження");
 
-    LoadToUser(&userToSave);
+    if(!IsUserInfoCorrect())
+    {
+        return;
+    }
+
+    LoadToUser(&userToSave);   
 
     if(isCardConnected != userToSave->IsCardConnected())
     {
@@ -241,4 +246,108 @@ void RegistrationWindow::SaveClick()
 void RegistrationWindow::CancelClick()
 {
     close();
+}
+
+bool RegistrationWindow::IsUserInfoCorrect()
+{
+    bool isError = false;
+    if(ui->editLogin->text().length() < 8)
+    {
+        SetEditTextErrorState(ui->editLogin);
+        isError = true;
+    }else
+        SetEditTextErrorState(ui->editLogin, false);
+
+    if(ui->editPassword->text().length() < 8)
+    {
+        SetEditTextErrorState(ui->editPassword);
+        isError = true;
+    }else
+        SetEditTextErrorState(ui->editPassword, false);
+
+    if(ui->editSurname->text().isEmpty())
+    {
+        SetEditTextErrorState(ui->editSurname);
+        isError = true;
+    }else
+        SetEditTextErrorState(ui->editSurname, false);
+
+    if(ui->editName->text().isEmpty())
+    {
+        SetEditTextErrorState(ui->editName);
+        isError = true;
+    }else
+        SetEditTextErrorState(ui->editName, false);
+
+    if(ui->editPhoneNumber->text().isEmpty())
+    {
+        SetEditTextErrorState(ui->editPhoneNumber);
+        isError = true;
+    }else
+        SetEditTextErrorState(ui->editPhoneNumber, false);
+
+    if(ui->checkBoxPatient->isChecked() && !isCardConnected)
+    {
+        SetEditTextErrorState(ui->editCardId);
+        isError = true;
+    }else
+        SetEditTextErrorState(ui->editCardId, false);
+
+    if(ui->checkBoxDoctor->isChecked())
+    {
+        if(ui->comboBox->currentText().isEmpty())
+        {
+            QMessageBox msg;
+            msg.setWindowTitle("Результат збереження");
+            msg.setText("Виберіть спеціальність лікаря!");
+            msg.exec();
+            isError = true;
+        }
+
+        if(ui->editTimeStartWork->text().isEmpty())
+        {
+            SetEditTextErrorState(ui->editTimeStartWork);
+            isError = true;
+        }else
+            SetEditTextErrorState(ui->editTimeStartWork, false);
+
+        if(ui->editTimeEndWork->text().isEmpty())
+        {
+            SetEditTextErrorState(ui->editTimeEndWork);
+            isError = true;
+        }else
+            SetEditTextErrorState(ui->editTimeEndWork, false);
+
+        if(ui->editCabinet->text().isEmpty())
+        {
+            SetEditTextErrorState(ui->editCabinet);
+            isError = true;
+        }else
+            SetEditTextErrorState(ui->editCabinet, false);
+
+        bool isDayChoosed = false;
+        for(int i = 0; i < 7; i++) if(daysState[i]) isDayChoosed = true;
+        if(!isDayChoosed && !isError)
+        {
+            QMessageBox msg;
+            msg.setWindowTitle("Результат збереження");
+            msg.setText("Виберіть день/дні роботи лікаря!");
+            msg.exec();
+            isError = true;
+        }
+    }
+
+
+    return !isError;
+}
+
+void RegistrationWindow::SetEditTextErrorState(QWidget* widget, bool isError)
+{
+    QPalette pal = widget->palette();
+    if(isError)
+        pal.setColor(QPalette::Base, QColor(Qt::red));
+    else
+        pal.setColor(QPalette::Base, QColor(Qt::transparent));
+    widget->setPalette(pal);
+    widget->update();
 }

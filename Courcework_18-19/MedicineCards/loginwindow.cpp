@@ -20,14 +20,22 @@ LoginWindow::~LoginWindow()
 
 void LoginWindow::LoginClick()
 {
-    QMessageBox mBox;
+    QMessageBox mBox;    
     User user(ui->lineEditLogin->text(), ui->lineEditPassword->text());
-    if(user.IsLogined())
+    if(user.IsPrivilegyExist(User::Privilegies::Admin) || user.IsPrivilegyExist(User::Privilegies::Doctor) ||
+            user.IsPrivilegyExist(User::Privilegies::Recorder))
     {
-        close();
+        if(user.IsLogined())
+        {
+            close();
+        }else
+        {
+            mBox.setText("Помилка входу! Перевірте логін та пароль.");
+            mBox.exec();
+        }
     }else
     {
-        mBox.setText("Помилка входу! Перевірте логін та пароль.");
+        mBox.setText("Помилка входу! Пацієнт не може входити в систему.");
         mBox.exec();
     }
 }

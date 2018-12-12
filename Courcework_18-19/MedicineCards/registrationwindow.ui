@@ -528,6 +528,9 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QLabel" name="labWorkTime">
      <property name="geometry">

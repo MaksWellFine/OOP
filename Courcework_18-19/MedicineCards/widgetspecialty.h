@@ -1,22 +1,32 @@
 #ifndef WIDGETSPECIALTY_H
 #define WIDGETSPECIALTY_H
 
+#include "hospitaldatabasehelper.h"
+
 #include <QWidget>
 
 namespace Ui {
-class widgetSpecialty;
+class WidgetSpecialty;
 }
 
-class widgetSpecialty : public QWidget
+class WidgetSpecialty : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit widgetSpecialty(QWidget *parent = nullptr);
-    ~widgetSpecialty();
+    explicit WidgetSpecialty(HospitalDatabaseHelper *helper, QWidget *parent = nullptr);
+    ~WidgetSpecialty();
 
 private:
-    Ui::widgetSpecialty *ui;
+    HospitalDatabaseHelper* helper;
+
+    Ui::WidgetSpecialty *ui;
+
+    void AddRow(QString specialty);
+
+private slots:
+    void RemoveClick();
+    void AddClick();
 };
 
 #endif // WIDGETSPECIALTY_H
