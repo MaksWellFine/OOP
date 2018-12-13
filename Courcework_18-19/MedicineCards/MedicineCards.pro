@@ -39,7 +39,9 @@ SOURCES += \
     widgetspecialty.cpp \
     widgetschedule.cpp\
     userinfo.cpp\
-    widgetpatients.cpp
+    widgetpatients.cpp \
+    widgetregister.cpp \
+    patientrecordswindow.cpp
 
 HEADERS += \
         loginwindow.h \
@@ -53,7 +55,9 @@ HEADERS += \
     widgetspecialty.h \
     widgetschedule.h\
     userinfo.h\
-    widgetpatients.h
+    widgetpatients.h \
+    widgetregister.h \
+    patientrecordswindow.h
 
 FORMS += \
         loginwindow.ui \
@@ -62,7 +66,9 @@ FORMS += \
     widgetspecialty.ui \
     widgetschedule.ui\
     userinfo.ui\
-    widgetpatients.ui
+    widgetpatients.ui \
+    widgetregister.ui \
+    patientrecordswindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
