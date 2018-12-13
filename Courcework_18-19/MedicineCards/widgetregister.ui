@@ -32,7 +32,7 @@
       <widget class="QComboBox" name="comboBoxSpecialties"/>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QComboBox" name="comboBoxDoctors"/>
      </item>
     </layout>
    </item>

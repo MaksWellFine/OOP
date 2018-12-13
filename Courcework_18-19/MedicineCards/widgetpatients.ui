@@ -15,10 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QComboBox" name="comboBox"/>
-   </item>
-   <item>
-    <widget class="QTableWidget" name="tableWidget">
+    <widget class="QTableWidget" name="tableWidgetUsers">
      <property name="minimumSize">
       <size>
        <width>500</width>
@@ -64,12 +61,7 @@
      <row/>
      <column>
       <property name="text">
-       <string>Ім'я</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Новий стовпчик</string>
+       <string>П.І.Б</string>
       </property>
      </column>
      <column>

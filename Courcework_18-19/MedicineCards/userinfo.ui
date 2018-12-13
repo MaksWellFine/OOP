@@ -35,7 +35,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="labelImg">
        <property name="maximumSize">
         <size>
          <width>120</width>
@@ -125,14 +125,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="btnOpenPatientsHistory">
      <property name="font">
       <font>
        <pointsize>12</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>Записати</string>
+      <string>Відкрити історію пацієнта</string>
      </property>
     </widget>
    </item>
