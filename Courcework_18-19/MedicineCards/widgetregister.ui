@@ -29,23 +29,10 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayoutFilter">
      <item>
-      <widget class="QFontComboBox" name="fontComboBoxSpecialties">
-       <property name="currentText">
-        <string>Спеціальності</string>
-       </property>
-       <property name="currentFont">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="comboBoxSpecialties"/>
      </item>
      <item>
-      <widget class="QFontComboBox" name="fontComboBoxDoctors">
-       <property name="currentText">
-        <string>Лікарі</string>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="comboBox"/>
      </item>
     </layout>
    </item>

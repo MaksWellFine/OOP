@@ -15,7 +15,10 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="0" rowspan="2">
+    <item row="3" column="1">
+     <widget class="QTextEdit" name="textEdit"/>
+    </item>
+    <item row="3" column="0" rowspan="2">
      <widget class="QTableWidget" name="tableWidgetPatientRecords">
       <property name="rowCount">
        <number>15</number>
@@ -61,12 +64,12 @@
       <row/>
       <column>
        <property name="text">
-        <string>Час</string>
+        <string>Дата/Час</string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Пацієнт</string>
+        <string>Лікар</string>
        </property>
       </column>
       <column>
@@ -76,36 +79,55 @@
       </column>
      </widget>
     </item>
-    <item row="3" column="1">
+    <item row="4" column="1">
      <widget class="QPushButton" name="btnAdd">
-      <property name="text">
-       <string>Добавити</string>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
       </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QFontComboBox" name="fontComboBox">
-      <property name="currentText">
-       <string>Спеціальність</string>
+      <property name="text">
+       <string>Зберегти</string>
       </property>
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QFontComboBox" name="fontComboBoxDoctors">
-      <property name="currentText">
-       <string>Лікар</string>
+     <widget class="QLabel" name="labelName">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Name</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLabel" name="labelSpeciality">
+      <property name="text">
+       <string>Speciality</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLabel" name="labelDescription">
+     <widget class="QLabel" name="labelDataTime">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="text">
-       <string>Опис</string>
+       <string>Data/time</string>
       </property>
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QDateEdit" name="dateEdit"/>
+     <widget class="QComboBox" name="comboBox"/>
     </item>
    </layout>
   </widget>
