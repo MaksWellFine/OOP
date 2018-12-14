@@ -4,13 +4,34 @@
 
 #include <QMessageBox>
 
-LoginWindow::LoginWindow(QWidget *parent) :
+LoginWindow *LoginWindow::nowOperatingWin;
+
+LoginWindow::LoginWindow(SerialCommunicationWithCard* serial, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::LoginWindow)
 {
     ui->setupUi(this);        
 
     connect(ui->buttonLogin, SIGNAL(released()), this, SLOT(LoginClick()));
+
+    this->serial = serial;
+
+    nowOperatingWin = this;
+    onCardConnected = [](QString cardId)-> void{
+        User user(cardId);
+        if(user.IsLogined())
+        {
+            QMessageBox mBox;
+            mBox.setText("Успішний вхід за допомогою картки!");
+            mBox.exec();
+            nowOperatingWin->Close();
+        }else{
+            QMessageBox mBox;
+            mBox.setText("Не вдалось увійти за допомогою картки!");
+            mBox.exec();
+        }
+    };
+    serial->AddCardAddListener(onCardConnected);
 }
 
 LoginWindow::~LoginWindow()
@@ -38,4 +59,10 @@ void LoginWindow::LoginClick()
         mBox.setText("Помилка входу! Пацієнт не може входити в систему.");
         mBox.exec();
     }
+}
+
+void LoginWindow::Close()
+{
+    serial->RemoveCardAddListener(onCardConnected);
+    close();
 }

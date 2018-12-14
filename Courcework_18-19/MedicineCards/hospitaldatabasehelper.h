@@ -5,6 +5,7 @@
 
 #include "databasehelper.h"
 #include "doctor.h"
+#include "patientrecord.h"
 #include "user.h"
 
 #include <QCoreApplication>
@@ -12,10 +13,16 @@
 class User;
 class Doctor;
 struct WorkTime;
+class PatientRecord;
+
 class HospitalDatabaseHelper: public DatabaseHelper
 {
     void RefreshWorkTimes(int userId, QList<WorkTime> workTimesNew);
     QList<WorkTime> GetWorkTimes(int doctorId);
+
+    int GetUserId(User* user);
+    int GetDoctorId(Doctor* doctor);
+    int GetDoctorId(int userId);
 public:
     const static QString DB_NAME;
 
@@ -72,6 +79,12 @@ public:
     QList<Doctor> GetDoctors(QString condition, User *user=nullptr);
     QList<Doctor> GetDoctors(User *user);
     void DeleteDoctor(Doctor* doctor);
+
+    void SavePatientRecord(PatientRecord* record);
+    QList<PatientRecord> GetPatientRecords(User *user);
+    QList<PatientRecord> GetPatientRecords(Doctor *doctor);
+    QList<PatientRecord> GetPatientRecords(QString condition);
+    void DeletePatientRecord(PatientRecord* record);
 };
 
 #endif // HOSPITALDATABASEHELPER_H

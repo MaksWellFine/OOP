@@ -4,11 +4,13 @@
 #include <QGraphicsPixmapItem>
 #include <QMessageBox>
 
-RegistrationWindow::RegistrationWindow(QWidget *parent, User *creator, User *user) :
+RegistrationWindow* RegistrationWindow::nowOperatingWin = nullptr;
+
+RegistrationWindow::RegistrationWindow(SerialCommunicationWithCard* serial, QWidget *parent, User *creator, User *user) :
     QMainWindow(parent),
     ui(new Ui::RegistrationWindow)
 {
-    ui->setupUi(this);
+    ui->setupUi(this);    
 
     ui->labUserImage->setPixmap(QPixmap::fromImage(*(new QImage(":/images/user.jpg"))).scaled(
                                     ui->labUserImage->width(), ui->labUserImage->height(), Qt::KeepAspectRatio));
@@ -26,6 +28,16 @@ RegistrationWindow::RegistrationWindow(QWidget *parent, User *creator, User *use
 
     connect(ui->butCancel, SIGNAL(released()), this, SLOT(CancelClick()));
     connect(ui->butSave, SIGNAL(released()), this, SLOT(SaveClick()));   
+
+    this->serial = serial;
+
+    nowOperatingWin = this;
+    onCardConnected = [](QString cardId)-> void{
+        nowOperatingWin->ui->editCardId->setText(cardId);
+        nowOperatingWin->isCardConnected = true;
+    };
+    serial->AddCardAddListener(onCardConnected);
+
 
     if(creator==nullptr)
     {
@@ -229,8 +241,8 @@ void RegistrationWindow::SaveClick()
         if(userToSave->Login())
         {
             msg.setText("Кориcтувача успішно збережено!");
-            msg.exec();
-            close();
+            msg.exec();            
+            CancelClick();
         }else
         {
             msg.setText("Кориcтувача успішно збережено, проте не вдалось увійти в систему, спробуйте ще раз!");
@@ -245,6 +257,7 @@ void RegistrationWindow::SaveClick()
 
 void RegistrationWindow::CancelClick()
 {
+    serial->RemoveCardAddListener(onCardConnected);
     close();
 }
 

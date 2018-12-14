@@ -151,18 +151,10 @@ void HospitalDatabaseHelper::SaveDoctor(Doctor* doctor)
     //Search user ID and speciality ID
     int userId, specId;
 
-    DatabaseResponse *response = Select(TABLE_USERS_NAME, QList<QString>{ARG_USERS_ID, ARG_USERS_LOGIN},
-                                        ARG_USERS_LOGIN+"='"+doctor->GetUser()->GetLogin()+"'");
-    if(response->IsError())   
-        return;    
-    if(!databaseQuery.first())
-    {
-        CreateDatabaseResponse("Користувач з логіном '" + doctor->GetUser()->GetLogin() + "' не існує. Не можливо зберегти лікаря.");
-        return;
-    }else userId = databaseQuery.value(response->GetRecord().indexOf(ARG_USERS_ID)).toInt();
+    userId = GetUserId(doctor->GetUser());
+    if(userId == -1) return;
 
-
-    response = Select(TABLE_SPECIALITIES_NAME, QList<QString>{ARG_SPECIALITIES_ID},
+    DatabaseResponse* response = Select(TABLE_SPECIALITIES_NAME, QList<QString>{ARG_SPECIALITIES_ID},
                       ARG_SPECIALITIES_SPECIALITY+"='"+doctor->GetSpeciality()+"'");    
     if(!databaseQuery.first())
     {
@@ -233,16 +225,10 @@ QList<Doctor> HospitalDatabaseHelper::GetDoctors(User *user)
 
 void HospitalDatabaseHelper::DeleteDoctor(Doctor* doctor)
 {
-    int userId;
-    DatabaseResponse *response = Select(TABLE_USERS_NAME, QList<QString>{ARG_USERS_ID, ARG_USERS_LOGIN},
-                                        ARG_USERS_LOGIN+"='"+doctor->GetUser()->GetLogin()+"'");
-    if(!databaseQuery.first())
-    {
-        CreateDatabaseResponse("Користувач з логіном '" + doctor->GetUser()->GetLogin() + "' не існує. Не можливо загрузити лікаря.");
-        return;
-    }else
-        userId = databaseQuery.value(response->GetRecord().indexOf(ARG_USERS_ID)).toInt();
-    response = Delete(TABLE_DOCTORS_NAME, ARG_DOCTORS_USER_ID+"='"+QString::number(userId)+"'");
+    int userId = GetUserId(doctor->GetUser());
+    if(userId == -1) return;
+
+    DatabaseResponse* response = Delete(TABLE_DOCTORS_NAME, ARG_DOCTORS_USER_ID+"='"+QString::number(userId)+"'");
 
     if(response->IsError())
     {
@@ -254,17 +240,81 @@ void HospitalDatabaseHelper::DeleteDoctor(Doctor* doctor)
     }
 }
 
+void HospitalDatabaseHelper::SavePatientRecord(PatientRecord* record)
+{
+    QString userIdStr = QString::number(GetUserId(record->GetUser()));
+    QString doctorIdStr = QString::number(GetDoctorId(record->GetDoctor()));
+    Update(TABLE_RECORDS_NAME, QList<QString>{ARG_RECORDS_USER_ID, ARG_RECORDS_DOCTOR_ID, ARG_RECORDS_VISIT_DATE, ARG_RECORDS_VISIT_DURATION,
+                                              ARG_RECORDS_VISIT_DATA, ARG_RECORDS_IS_VERIFIED},
+        QList<QString>{userIdStr, doctorIdStr, record->GetVisitDateTime()->toString(PatientRecord::DATE_TIME_FORMAT),
+                       record->GetVisitDuration()->toString(Doctor::TIME_FORMAT), *record->GetVisitInfo(), QString::number(record->IsVisited())},
+            ARG_RECORDS_USER_ID+"="+"'"+userIdStr+"' AND "+
+           ARG_RECORDS_DOCTOR_ID+"="+"'"+doctorIdStr+"' AND "+
+           ARG_RECORDS_VISIT_DATE+"="+"'"+(record->GetVisitDateTime())->toString(PatientRecord::DATE_TIME_FORMAT)+"'");
+    if(databaseQuery.numRowsAffected() == 0)
+    {
+        Insert(TABLE_RECORDS_NAME, QList<QString>{ARG_RECORDS_USER_ID, ARG_RECORDS_DOCTOR_ID, ARG_RECORDS_VISIT_DATE, ARG_RECORDS_VISIT_DURATION,
+                                                  ARG_RECORDS_VISIT_DATA, ARG_RECORDS_IS_VERIFIED},
+            QList<QList<QString>>{{userIdStr, doctorIdStr, record->GetVisitDateTime()->toString(PatientRecord::DATE_TIME_FORMAT),
+                           record->GetVisitDuration()->toString(Doctor::TIME_FORMAT), *record->GetVisitInfo(), QString::number(record->IsVisited())}});
+    }
+}
+
+QList<PatientRecord> HospitalDatabaseHelper::GetPatientRecords(QString condition)
+{
+    DatabaseResponse *response = Select(TABLE_RECORDS_NAME, QList<QString>{ARG_RECORDS_USER_ID, ARG_RECORDS_DOCTOR_ID, ARG_RECORDS_VISIT_DATE, ARG_RECORDS_VISIT_DURATION,
+                                                                           ARG_RECORDS_VISIT_DATA, ARG_RECORDS_IS_VERIFIED}, condition);
+    QSqlRecord sqlRecord = response->GetRecord();
+    QList<PatientRecord> patientRecords;
+    while(databaseQuery.next())
+    {
+        int userId = databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_USER_ID)).toInt();
+        int doctorId = databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_DOCTOR_ID)).toInt();
+        QDateTime dateTime = QDateTime::fromString(databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DATE)).toString(), PatientRecord::DATE_TIME_FORMAT);
+        QTime duration = QTime::fromString(databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DURATION)).toString(), Doctor::TIME_FORMAT);
+        QString data = databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DATA)).toString();
+        bool isVerified = (bool)databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_IS_VERIFIED)).toInt();
+
+        QList<User> users = GetUsers(ARG_USERS_ID+"='"+QString::number(userId)+"'");
+        if(users.length()<=0)return QList<PatientRecord>{};
+        User *user = new User(users[0]);
+
+        QList<Doctor> doctors = GetDoctors(ARG_DOCTORS_ID+"='"+QString::number(doctorId)+"'");
+        if(doctors.length()<=0)return QList<PatientRecord>{};
+        Doctor *doctor = new Doctor(doctors[0]);
+
+        patientRecords.append(*(new PatientRecord(user, doctor, &dateTime, &duration, &data, isVerified)));
+    }
+    return patientRecords;
+}
+
+QList<PatientRecord> HospitalDatabaseHelper::GetPatientRecords(User *user)
+{
+    return GetPatientRecords(ARG_RECORDS_USER_ID+"+'"+QString::number(GetUserId(user))+"'");
+}
+
+QList<PatientRecord> HospitalDatabaseHelper::GetPatientRecords(Doctor *doctor)
+{
+    return GetPatientRecords(ARG_RECORDS_DOCTOR_ID+"+'"+QString::number(GetDoctorId(doctor))+"'");
+}
+
+void HospitalDatabaseHelper::DeletePatientRecord(PatientRecord* record)
+{
+    QString userIdStr = QString::number(GetUserId(record->GetUser()));
+    QString doctorIdStr = QString::number(GetDoctorId(record->GetDoctor()));
+    DatabaseResponse* response = Delete(TABLE_RECORDS_NAME, ARG_RECORDS_USER_ID+"="+"'"+userIdStr+"' AND "+
+                                        ARG_RECORDS_DOCTOR_ID+"="+"'"+doctorIdStr+"' AND "+
+                                        ARG_RECORDS_VISIT_DATE+"="+"'"+(record->GetVisitDateTime())->toString(PatientRecord::DATE_TIME_FORMAT)+"'");
+
+    if(response->IsError())
+        CreateDatabaseResponse("Не можливо видалити запис про пацієнта");
+}
+
 void HospitalDatabaseHelper::RefreshWorkTimes(int userId, QList<WorkTime> workTimesNew)
 {
     //Search now operating doctor ID
-    int doctorId;
-    DatabaseResponse* response = Select(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_ID},
-                                        ARG_DOCTORS_USER_ID+"='"+QString::number(userId)+"'");
-    if(!databaseQuery.first())
-    {
-        CreateDatabaseResponse("Лікаря з id '" + QString::number(userId) + "' не існує. Не можливо зберегти лікаря.");
-        return;
-    }else doctorId = databaseQuery.value(response->GetRecord().indexOf(ARG_DOCTORS_ID)).toInt();
+    int doctorId = GetDoctorId(userId);
+    if(doctorId == -1) return;
 
     //Search available worktimes for doctor
     QList<WorkTime> workTimesOld = GetWorkTimes(doctorId);
@@ -305,6 +355,7 @@ void HospitalDatabaseHelper::RefreshWorkTimes(int userId, QList<WorkTime> workTi
         if(!isContain) indexesToAdd.append(i);
     }
 
+    DatabaseResponse* response;
     for(int i = 0; i < indexesToRemove.length(); i++)
     {
         WorkTime oldWorkTime = workTimesOld[indexesToRemove[i]];
@@ -353,4 +404,35 @@ QList<WorkTime> HospitalDatabaseHelper::GetWorkTimes(int doctorId)
         workTimes.append(WorkTime(cabinet, time, (WorkTime::Day)day));
     }
     return workTimes;
+}
+
+int HospitalDatabaseHelper::GetUserId(User* user)
+{
+    int userId;
+    DatabaseResponse *response = Select(TABLE_USERS_NAME, QList<QString>{ARG_USERS_ID, ARG_USERS_LOGIN},
+                                        ARG_USERS_LOGIN+"='"+user->GetLogin()+"'");
+    if(!databaseQuery.first())
+    {
+        CreateDatabaseResponse("Користувач з логіном '" + user->GetLogin() + "' не існує. Не можливо получити його id.");
+        return -1;
+    }else
+        userId = databaseQuery.value(response->GetRecord().indexOf(ARG_USERS_ID)).toInt();
+}
+
+int HospitalDatabaseHelper::GetDoctorId(Doctor* doctor)
+{
+    GetDoctorId(GetUserId(doctor->GetUser()));
+}
+
+int HospitalDatabaseHelper::GetDoctorId(int userId)
+{
+    int doctorId;
+    DatabaseResponse* response = Select(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_ID},
+                                        ARG_DOCTORS_USER_ID+"='"+QString::number(userId)+"'");
+    if(!databaseQuery.first())
+    {
+        CreateDatabaseResponse("Лікаря з id '" + QString::number(userId) + "' не існує.");
+        return -1;
+    }else doctorId = databaseQuery.value(response->GetRecord().indexOf(ARG_DOCTORS_ID)).toInt();
+    return doctorId;
 }

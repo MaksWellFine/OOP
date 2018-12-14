@@ -1,6 +1,8 @@
 #ifndef LOGINWINDOW_H
 #define LOGINWINDOW_H
 
+#include "serialcommunicationwithcard.h"
+
 #include <QMainWindow>
 #include <QPushButton>
 
@@ -13,14 +15,22 @@ class LoginWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit LoginWindow(QWidget *parent = nullptr);
+    explicit LoginWindow(SerialCommunicationWithCard* serial, QWidget *parent = nullptr);
     ~LoginWindow();
 
 private slots:
     void LoginClick();
 
 private:
-    Ui::LoginWindow *ui;        
+    static LoginWindow *nowOperatingWin;
+
+    Ui::LoginWindow *ui;
+
+    SerialCommunicationWithCard* serial;
+
+    void Close();
+
+    SerialCommunicationWithCard::OnCardAddFunct* onCardConnected;
 };
 
 #endif // LOGINWINDOW_H

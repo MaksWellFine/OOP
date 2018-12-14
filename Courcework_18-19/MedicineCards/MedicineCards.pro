@@ -7,6 +7,7 @@
 QT       += core gui
 
 QT+=sql
+QT += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -37,7 +38,9 @@ SOURCES += \
     doctor.cpp \
     mainwindow.cpp \
     widgetspecialty.cpp \
-    widgetschedule.cpp
+    widgetschedule.cpp \
+    patientrecord.cpp \
+    serialcommunicationwithcard.cpp
 
 HEADERS += \
         loginwindow.h \
@@ -49,7 +52,9 @@ HEADERS += \
     doctor.h \
     mainwindow.h \
     widgetspecialty.h \
-    widgetschedule.h
+    widgetschedule.h \
+    patientrecord.h \
+    serialcommunicationwithcard.h
 
 FORMS += \
         loginwindow.ui \
