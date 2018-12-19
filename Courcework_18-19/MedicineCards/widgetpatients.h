@@ -1,22 +1,56 @@
 #ifndef WIDGETPATIENTS_H
 #define WIDGETPATIENTS_H
 
+#include "registrationwindow.h"
+#include "serialcommunicationwithcard.h"
+#include "user.h"
+#include "userinfo.h"
+
 #include <QWidget>
 
 namespace Ui {
-class widgetPatients;
+class WidgetPatients;
 }
 
-class widgetPatients : public QWidget
+class WidgetPatients : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit widgetPatients(QWidget *parent = nullptr);
-    ~widgetPatients();
+    explicit WidgetPatients(SerialCommunicationWithCard* serial, User* nowUser, UserInfo* infoWidg, QWidget *parent = nullptr);
+    explicit WidgetPatients(User* nowUser, UserInfo* infoWidg, QWidget *parent = nullptr);
+    ~WidgetPatients();
+
+    void CloseRegistrationWindow();
+    void LoadUsers();
+    User* GetChoosedItem();
 
 private:
-    Ui::widgetPatients *ui;
+    bool isEditingUser = false;
+    Ui::WidgetPatients *ui;
+
+    SerialCommunicationWithCard* serial;
+
+    RegistrationWindow* regWin = nullptr;
+
+    User* user;
+    UserInfo* userInfoWidg;
+
+    QList<User> users;
+
+    bool isOnlyPatients = false;
+
+    int RowToListIndex(int indx);
+
+private slots:
+    void OnSaved();
+    void OnClosed();
+
+public slots:
+    void ItemChoosed(QModelIndex,QModelIndex);
+    void RemoveClick();
+    void AddClick();
+    void EditClick();
 };
 
 #endif // WIDGETPATIENTS_H

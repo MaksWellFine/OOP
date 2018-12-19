@@ -1,3 +1,4 @@
+#include "mainwindow.h"
 #include "registrationwindow.h"
 #include "ui_registrationwindow.h"
 
@@ -42,6 +43,7 @@ RegistrationWindow::RegistrationWindow(SerialCommunicationWithCard* serial, QWid
     if(creator==nullptr)
     {
         isAdmin = true;
+        isCreateFirstUser = true;
         setWindowTitle("Реєстрація адміністратора");
         ui->checkBoxRecorder->setEnabled(true);
         ui->checkBoxPatient->setEnabled(true);
@@ -62,13 +64,13 @@ RegistrationWindow::RegistrationWindow(SerialCommunicationWithCard* serial, QWid
         }
 
         if(user!=nullptr)
-        {
+        {            
             if(creator->IsPrivilegyExist(User::Privilegies::Admin) ||
                     (creator->IsPrivilegyExist(User::Privilegies::Recorder) && !user->IsPrivilegyExist(User::Privilegies::Admin)
                         && !user->IsPrivilegyExist(User::Privilegies::Doctor) && !user->IsPrivilegyExist(User::Privilegies::Recorder)) ||
                     creator->GetLogin() == user->GetLogin())
             {
-                setWindowTitle("Редагування користувача");
+                setWindowTitle("Редагування користувача");                
                 LoadFromUser(user);
                 userToSave = user;
             }else
@@ -174,9 +176,7 @@ void RegistrationWindow::LoadToUser(User **user)
     {
         *user = new User(ui->editLogin->text(), ui->editPassword->text(), ui->editSurname->text(), ui->editName->text(),
                         ui->editFatherName->text(), ui->editDateOfBirthd->date(),
-                        ui->editAddress->text(), ui->editPhoneNumber->text());
-        if(isCardConnected) (*user)->ConnectCard(ui->editCardId->text(), true);
-
+                        ui->editAddress->text(), ui->editPhoneNumber->text());        
     }else
     {
         (*user)->SetPassword(ui->editPassword->text());
@@ -186,6 +186,11 @@ void RegistrationWindow::LoadToUser(User **user)
         (*user)->SetAddress(ui->editAddress->text());
         (*user)->SetPhoneNumber(ui->editPhoneNumber->text());
         (*user)->SetDateOfBirthd(ui->editDateOfBirthd->date());
+    }
+    if(isCardConnected)
+    {
+        if(oldCardId == "") oldCardId = (*user)->GetCardId();
+        (*user)->ConnectCard(ui->editCardId->text(), true);
     }
     if(ui->checkBoxRecorder->isChecked())
         (*user)->AddPrivilegyRecorder();
@@ -217,15 +222,20 @@ void RegistrationWindow::SaveClick()
     QMessageBox msg;
     msg.setWindowTitle("Результат збереження");
 
-    if(!IsUserInfoCorrect())
-    {
-        return;
-    }
+    if(!IsUserInfoCorrect())    
+        return;    
 
     LoadToUser(&userToSave);   
 
     if(isCardConnected != userToSave->IsCardConnected())
     {
+        if(oldCardId != User::DEFAULT_CARD_ID_VAL)
+        {
+            userToSave->ConnectCard(oldCardId);
+            ui->editCardId->setText(oldCardId);
+        }else
+            ui->editCardId->setText("Прикладіть картку");
+
         msg.setText("Дана картка уже викорстовується!");
         msg.exec();
         return;
@@ -237,12 +247,21 @@ void RegistrationWindow::SaveClick()
         return;
     }
     if(userToSave->SaveToDB())
-    {        
-        if(userToSave->Login())
+    {
+        if(!isCreateFirstUser || userToSave->Login())
         {
-            msg.setText("Кориcтувача успішно збережено!");
-            msg.exec();            
-            CancelClick();
+            if(ui->checkBoxDoctor->isChecked() && userToSave->GetDoctor()==nullptr)
+            {
+                msg.setText("Кориcтувача збережено, проте не вдалось додати налаштування лікаря!");
+                msg.exec();
+            }else
+            {
+                msg.setText("Кориcтувача успішно збережено!");
+                msg.exec();
+                if(isCreateFirstUser) StartMainWindow();
+                emit onSaved();
+                CancelClick();
+            }
         }else
         {
             msg.setText("Кориcтувача успішно збережено, проте не вдалось увійти в систему, спробуйте ще раз!");
@@ -261,9 +280,26 @@ void RegistrationWindow::CancelClick()
     close();
 }
 
+void RegistrationWindow::StartMainWindow()
+{
+    MainWindow *wind = new MainWindow(serial, userToSave);
+    wind->show();
+}
+
 bool RegistrationWindow::IsUserInfoCorrect()
 {
     bool isError = false;
+
+    if(!ui->checkBoxPatient->isChecked() && !ui->checkBoxRecorder->isChecked() && !ui->checkBoxDoctor->isChecked()
+            && !isAdmin)
+    {
+        QMessageBox msg;
+        msg.setWindowTitle("Результат збереження");
+        msg.setText("Виберіть хоча б одну привілегію користувача(пацієнт, реєстратор, лікар)!");
+        msg.exec();
+        isError = true;
+    }
+
     if(ui->editLogin->text().length() < 8)
     {
         SetEditTextErrorState(ui->editLogin);
@@ -291,6 +327,13 @@ bool RegistrationWindow::IsUserInfoCorrect()
         isError = true;
     }else
         SetEditTextErrorState(ui->editName, false);
+
+    if(ui->editFatherName->text().isEmpty())
+    {
+        SetEditTextErrorState(ui->editFatherName);
+        isError = true;
+    }else
+        SetEditTextErrorState(ui->editFatherName, false);
 
     if(ui->editPhoneNumber->text().isEmpty())
     {
@@ -363,4 +406,10 @@ void RegistrationWindow::SetEditTextErrorState(QWidget* widget, bool isError)
         pal.setColor(QPalette::Base, QColor(Qt::transparent));
     widget->setPalette(pal);
     widget->update();
+}
+
+void RegistrationWindow::closeEvent(QCloseEvent *event)
+{
+    emit onClose();
+    QWidget::closeEvent(event);
 }

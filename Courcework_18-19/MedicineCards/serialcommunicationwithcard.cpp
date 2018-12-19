@@ -5,7 +5,7 @@
 #include <QtSerialPort/QtSerialPort>
 
 const QString SerialCommunicationWithCard::codingKey = "whd22fke";
-const int SerialCommunicationWithCard::readInterval = 300;
+const int SerialCommunicationWithCard::readInterval = 200;
 const QString SerialCommunicationWithCard::NO_CARD_CONNECTED = "_";
 
 SerialCommunicationWithCard::SerialCommunicationWithCard(QList<QString> availablePortNames)
@@ -25,6 +25,17 @@ SerialCommunicationWithCard::SerialCommunicationWithCard(QList<QString> availabl
     isWrite = true;
 }
 
+SerialCommunicationWithCard::~SerialCommunicationWithCard()
+{
+}
+
+void SerialCommunicationWithCard::Disconnect()
+{
+    WriteData(QByteArray::fromStdString("-"));
+    //thread->requestInterruption();
+    //CloseSerialPort();
+}
+
 void SerialCommunicationWithCard::CheckComPort(int indx)
 {
     nowCheckPort++;
@@ -42,6 +53,7 @@ void SerialCommunicationWithCard::CheckComPort(int indx)
         serial->setParity(QSerialPort::NoParity);
         serial->setStopBits(QSerialPort::OneStop);
         serial->setFlowControl(QSerialPort::NoFlowControl);
+        serial->clear(Direction::Input);
 
         WriteData(QByteArray::fromStdString("?"));
     }else{
@@ -72,7 +84,7 @@ void SerialCommunicationWithCard::WriteData(const QByteArray &data, bool addToQu
 }
 
 void SerialCommunicationWithCard::ReadData()
-{    
+{        
     if(isPortOpened)
     {
         if(writeQueue.length() > 0)
@@ -157,6 +169,7 @@ void SerialCommunicationWithCard::ShowStatusMessage(const QString &message)
 void SerialCommunicationWithCard::OnPortOpened()
 {
     isPortOpened = true;
+    WriteData(QByteArray::fromStdString("+"));
     connect(serial, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(HandleError(QSerialPort::SerialPortError)));
 
     QMessageBox msg;

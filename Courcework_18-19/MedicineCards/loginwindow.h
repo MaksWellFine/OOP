@@ -2,6 +2,7 @@
 #define LOGINWINDOW_H
 
 #include "serialcommunicationwithcard.h"
+#include "user.h"
 
 #include <QMainWindow>
 #include <QPushButton>
@@ -28,7 +29,7 @@ private:
 
     SerialCommunicationWithCard* serial;
 
-    void Close();
+    void CloseAndStart(User* user);
 
     SerialCommunicationWithCard::OnCardAddFunct* onCardConnected;
 };

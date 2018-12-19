@@ -14,16 +14,15 @@ Doctor::Doctor(User *user, QString speciality,  QList<WorkTime> workTimes)
 {
     this->user = user;
     if(user==nullptr) return;
-
-    if(user->GetDatabase()->GetSpecialities("").contains(speciality))
+    /*if(user->GetDatabase()->GetSpecialities("").contains(speciality))
     {
         this->speciality = speciality;
     }else
     {
         user->GetDatabase()->SaveSpeciality(speciality);
         this->speciality = speciality;
-    }
-
+    }*/
+    this->speciality = speciality;
     this->workTimes = workTimes;
 }
 
@@ -48,14 +47,17 @@ WorkTime::WorkTime(QString cabinet, QPair<QTime, QTime> workTime, Day workDay)
 bool WorkTime::IsEquals(WorkTime workT)
 {
     return (workT.cabinet.compare(cabinet) == 0 &&
-            workT.workTime.first.msec() == workTime.first.msec() &&
-            workT.workTime.second.msec() == workTime.second.msec() &&
+            workT.workTime.first.msecsSinceStartOfDay() == workTime.first.msecsSinceStartOfDay() &&
+            workT.workTime.second.msecsSinceStartOfDay() == workTime.second.msecsSinceStartOfDay() &&
             workT.workDay == workDay);
 }
 
 User* Doctor::GetUser()
 {
-    return user;
+    if(user != nullptr)
+        return user;
+    else
+        return nullptr;
 }
 
 QString Doctor::GetSpeciality(){ return speciality; }
@@ -72,6 +74,7 @@ bool Doctor::SaveToDB()
     if(user == nullptr || user->GetDatabase()==nullptr) return false;
     HospitalDatabaseHelper *helper = user->GetDatabase();
 
+    helper->GetError();
     helper->SaveDoctor(this);
     return !helper->IsErrorExists();
 }

@@ -24,6 +24,7 @@ void PatientRecord::SetVisited(){isVisited = true;}
 
 bool PatientRecord::SaveToDB()
 {
+    user->GetDatabase()->GetError();
     user->GetDatabase()->SavePatientRecord(this);
     if(user->GetDatabase()->IsErrorExists())
         return false;

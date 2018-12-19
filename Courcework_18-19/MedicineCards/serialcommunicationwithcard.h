@@ -12,7 +12,7 @@ public:
     typedef void(OnCardAddFunct)(QString);
 
     SerialCommunicationWithCard(QList<QString> availablePortNames);
-    virtual ~SerialCommunicationWithCard(){};    
+    virtual ~SerialCommunicationWithCard();
 
 private:
     const static QString codingKey;
@@ -47,6 +47,7 @@ public:
     void AddCardAddListener(OnCardAddFunct* funct);
     void RemoveCardAddListener(OnCardAddFunct* funct);
     void RequestCard();
+    void Disconnect();
 
 public slots:    
     void CloseSerialPort();

@@ -21,7 +21,7 @@ void DatabaseHelper::InitializeDatabase()
     }
 }
 
-bool DatabaseHelper::IsErrorExists(){return isError;}
+bool DatabaseHelper::IsErrorExists(){ return isError;}
 QString DatabaseHelper::GetError(){isError = false; return databaseError;}
 void DatabaseHelper::SetError(QString str){isError = true; databaseError = str;}
 

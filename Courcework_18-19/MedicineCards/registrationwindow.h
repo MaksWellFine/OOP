@@ -27,7 +27,9 @@ private:
     SerialCommunicationWithCard* serial;
 
     bool isAdmin = false;
+    bool isCreateFirstUser = false;
     bool isCardConnected = false;
+    QString oldCardId = "";
     bool daysState[7]{false,false,false,false,false,false,false};
     QList<QPushButton*> daysStateBtns;
     User *userToSave = nullptr;
@@ -40,12 +42,20 @@ private:
     bool IsUserInfoCorrect();
     void SetEditTextErrorState(QWidget* widget, bool isError = true);
 
+    void StartMainWindow();
+
+    void closeEvent(QCloseEvent *event) override;
+
     SerialCommunicationWithCard::OnCardAddFunct* onCardConnected;
 private slots:
     void ChooseDayClick();
     void ChoosedDoctor();
     void SaveClick();
     void CancelClick();
+
+signals:
+    void onSaved();
+    void onClose();
 
 };
 

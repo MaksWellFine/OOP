@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>userInfo</class>
- <widget class="QWidget" name="userInfo">
+ <class>UserInfo</class>
+ <widget class="QWidget" name="UserInfo">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -9,15 +9,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>269</width>
-    <height>395</height>
+    <width>300</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>300</width>
+    <height>400</height>
+   </size>
   </property>
   <property name="contextMenuPolicy">
    <enum>Qt::NoContextMenu</enum>
@@ -42,11 +48,14 @@
          <height>120</height>
         </size>
        </property>
+       <property name="frameShape">
+        <enum>QFrame::Panel</enum>
+       </property>
        <property name="text">
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>user.jpg</pixmap>
+        <pixmap resource="resource.qrc">:/images/user.jpg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -62,9 +71,28 @@
     </layout>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0" rowminimumheight="0,0">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMinAndMaxSize</enum>
+     </property>
+     <property name="verticalSpacing">
+      <number>0</number>
+     </property>
      <item row="0" column="2">
       <widget class="QLabel" name="labelName">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>45</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>name</string>
        </property>
@@ -72,6 +100,19 @@
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="labelSurname">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>45</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>surName</string>
        </property>
@@ -79,6 +120,19 @@
      </item>
      <item row="1" column="1">
       <widget class="QLabel" name="labelFatherName">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>45</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>fatherName</string>
        </property>
@@ -90,13 +144,51 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QLabel" name="labelPrivilege">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+         <italic>true</italic>
+         <underline>true</underline>
+        </font>
+       </property>
        <property name="text">
         <string>privilege</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="labelPhoneNmber">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>phoneNumber</string>
        </property>
@@ -104,6 +196,13 @@
      </item>
      <item>
       <widget class="QLabel" name="labelAdress">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>adress</string>
        </property>
@@ -126,6 +225,12 @@
    </item>
    <item>
     <widget class="QPushButton" name="btnOpenPatientsHistory">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>50</height>
+      </size>
+     </property>
      <property name="font">
       <font>
        <pointsize>12</pointsize>
@@ -138,6 +243,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

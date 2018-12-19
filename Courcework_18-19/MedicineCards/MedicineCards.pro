@@ -40,8 +40,7 @@ SOURCES += \
     widgetspecialty.cpp \
     widgetschedule.cpp \
     patientrecord.cpp \
-    serialcommunicationwithcard.cpp \
-    widgetschedule.cpp\
+    serialcommunicationwithcard.cpp \    
     userinfo.cpp\
     widgetpatients.cpp \
     widgetregister.cpp \
@@ -59,8 +58,7 @@ HEADERS += \
     widgetspecialty.h \
     widgetschedule.h \
     patientrecord.h \
-    serialcommunicationwithcard.h \
-    widgetschedule.h\
+    serialcommunicationwithcard.h \    
     userinfo.h\
     widgetpatients.h \
     widgetregister.h \

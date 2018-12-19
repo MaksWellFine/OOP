@@ -21,6 +21,8 @@ int main(int argc, char *argv[])
     db.InitializeDatabase();
     User::ConnectDatabase(&db);
 
+    QList<User> usrs = db.GetUsers("");
+
     QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     QList<QString> portNames;
     for(int i = 0; i < ports.length(); i++)
@@ -44,7 +46,6 @@ int main(int argc, char *argv[])
         log = new LoginWindow(&serial);
         log->show();
     }
-
 
     return a.exec();
 }

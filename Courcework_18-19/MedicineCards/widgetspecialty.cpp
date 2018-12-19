@@ -3,6 +3,7 @@
 #include "hospitaldatabasehelper.h"
 
 #include <QInputDialog>
+#include <QMessageBox>
 
 WidgetSpecialty::WidgetSpecialty(HospitalDatabaseHelper *helper, QWidget *parent) :
     QWidget(parent),
@@ -40,6 +41,16 @@ void WidgetSpecialty::RemoveClick()
     if(items.length() > 0)
     {
         QString specName = items.at(0)->text();
+
+        if(helper->GetDoctors(HospitalDatabaseHelper::ARG_DOCTORS_SPECIALITY_ID+"='"+QString::number(helper->GetSpecialityId(specName))+"'").length()!=0)
+        {
+            QMessageBox msg;
+            msg.setWindowTitle("Помилка");
+            msg.setText("Цю спеціальність видалити не можна! Існує лікар з даної спеціальності.");
+            msg.exec();
+            return;
+        }
+
         helper->DeleteSpeciality(specName);
         if(!helper->IsErrorExists())
         {
@@ -72,6 +83,12 @@ void WidgetSpecialty::AddClick()
                 }
             if(rowId >= 0)
                 ui->tableRegister->selectRow(rowId);
+        }else
+        {
+            QMessageBox msg;
+            msg.setWindowTitle("Помилка");
+            msg.setText(helper->GetError());
+            msg.exec();
         }
     }
 }

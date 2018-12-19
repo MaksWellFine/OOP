@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>450</height>
+    <width>950</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>800</width>
-    <height>450</height>
+    <width>950</width>
+    <height>500</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -64,7 +64,7 @@
        <enum>QTabWidget::Triangular</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>-1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -81,53 +81,23 @@
       <property name="tabBarAutoHide">
        <bool>true</bool>
       </property>
-      <widget class="QWidget" name="tabShadow">
-       <property name="font">
-        <font>
-         <family>Arial</family>
-        </font>
-       </property>
-       <property name="cursor">
-        <cursorShape>ArrowCursor</cursorShape>
-       </property>
-       <attribute name="title">
-        <string>Розклад</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="tabPatients">
-       <property name="cursor">
-        <cursorShape>ArrowCursor</cursorShape>
-       </property>
-       <attribute name="title">
-        <string>Пацієнти</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="tabRegister">
-       <property name="cursor">
-        <cursorShape>ArrowCursor</cursorShape>
-       </property>
-       <attribute name="title">
-        <string>Журнал</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="tabSpecialty">
-       <property name="cursor">
-        <cursorShape>ArrowCursor</cursorShape>
-       </property>
-       <attribute name="title">
-        <string>Спеціальності</string>
-       </attribute>
-      </widget>
      </widget>
     </item>
     <item>
      <widget class="QWidget" name="widgetUserInfo" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
-        <width>200</width>
-        <height>0</height>
+        <width>300</width>
+        <height>400</height>
        </size>
       </property>
+      <layout class="QVBoxLayout" name="verticalLayout"/>
      </widget>
     </item>
    </layout>

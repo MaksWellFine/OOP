@@ -22,7 +22,7 @@ class HospitalDatabaseHelper: public DatabaseHelper
 
     int GetUserId(User* user);
     int GetDoctorId(Doctor* doctor);
-    int GetDoctorId(int userId);
+    int GetDoctorId(int userId);    
 public:
     const static QString DB_NAME;
 
@@ -74,6 +74,7 @@ public:
     void SaveSpeciality(QString spec);
     QList<QString> GetSpecialities(QString condition);
     void DeleteSpeciality(QString spec);
+    int GetSpecialityId(QString spec);
 
     void SaveDoctor(Doctor* doctor);
     QList<Doctor> GetDoctors(QString condition, User *user=nullptr);

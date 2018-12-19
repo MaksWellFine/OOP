@@ -81,10 +81,14 @@ void HospitalDatabaseHelper::SaveUser(User* user)
         ARG_USERS_LOGIN+"="+"'"+user->GetLogin()+"'");
     if(databaseQuery.numRowsAffected() == 0)
     {
-        Insert(TABLE_USERS_NAME, QList<QString>{ARG_USERS_CARD_ID, ARG_USERS_LOGIN, ARG_USERS_PASSWORD, ARG_USERS_SURNAME, ARG_USERS_NAME,
-            ARG_USERS_FATHER_NAME, ARG_USERS_DATE_OF_BIRTHD, ARG_USERS_ADDRESS, ARG_USERS_PHONE_NUMBER, ARG_USERS_PRIVILEGIES},
-            QList<QList<QString>>{{user->GetCardId(), user->GetLogin(), user->GetPassword(), user->GetSurname(), user->GetName(), user->GetFatherName(),
-            user->GetDateOfBirthd().toString(User::DATE_OF_BIRTHD_FORMAT), user->GetAddress(), user->GetPhoneNumber(), QString::number(user->GetPrivilegies())}});
+        Select(TABLE_USERS_NAME, QList<QString>{ARG_USERS_LOGIN}, ARG_USERS_LOGIN+"="+"'"+user->GetLogin()+"'");
+        if(!databaseQuery.first())
+        {
+            Insert(TABLE_USERS_NAME, QList<QString>{ARG_USERS_CARD_ID, ARG_USERS_LOGIN, ARG_USERS_PASSWORD, ARG_USERS_SURNAME, ARG_USERS_NAME,
+                ARG_USERS_FATHER_NAME, ARG_USERS_DATE_OF_BIRTHD, ARG_USERS_ADDRESS, ARG_USERS_PHONE_NUMBER, ARG_USERS_PRIVILEGIES},
+                QList<QList<QString>>{{user->GetCardId(), user->GetLogin(), user->GetPassword(), user->GetSurname(), user->GetName(), user->GetFatherName(),
+                user->GetDateOfBirthd().toString(User::DATE_OF_BIRTHD_FORMAT), user->GetAddress(), user->GetPhoneNumber(), QString::number(user->GetPrivilegies())}});
+        }
     }
 }
 
@@ -98,14 +102,16 @@ QList<User> HospitalDatabaseHelper::GetUsers(QString condition)
     if(response->IsError()) return users;
 
     QSqlRecord record = response->GetRecord();
-    while(databaseQuery.next())
+    QSqlQuery* databaseQuery = new QSqlQuery(this->databaseQuery);
+    //qDebug()<<databaseQuery.numRowsAffected();
+    while(databaseQuery->next())
     {
-        User user(databaseQuery.value(record.indexOf(ARG_USERS_LOGIN)).toString(), databaseQuery.value(record.indexOf(ARG_USERS_PASSWORD)).toString(),
-                    databaseQuery.value(record.indexOf(ARG_USERS_SURNAME)).toString(), databaseQuery.value(record.indexOf(ARG_USERS_NAME)).toString(),
-                    databaseQuery.value(record.indexOf(ARG_USERS_FATHER_NAME)).toString(), QDate::fromString(databaseQuery.value(record.indexOf(ARG_USERS_DATE_OF_BIRTHD)).toString(), User::DATE_OF_BIRTHD_FORMAT),
-                    databaseQuery.value(record.indexOf(ARG_USERS_ADDRESS)).toString(), databaseQuery.value(record.indexOf(ARG_USERS_PHONE_NUMBER)).toString(),
-                    databaseQuery.value(record.indexOf(ARG_USERS_PRIVILEGIES)).toInt());
-        user.ConnectCard(databaseQuery.value(record.indexOf(ARG_USERS_CARD_ID)).toString());
+        User user(databaseQuery->value(record.indexOf(ARG_USERS_LOGIN)).toString(), databaseQuery->value(record.indexOf(ARG_USERS_PASSWORD)).toString(),
+                    databaseQuery->value(record.indexOf(ARG_USERS_SURNAME)).toString(), databaseQuery->value(record.indexOf(ARG_USERS_NAME)).toString(),
+                    databaseQuery->value(record.indexOf(ARG_USERS_FATHER_NAME)).toString(), QDate::fromString(databaseQuery->value(record.indexOf(ARG_USERS_DATE_OF_BIRTHD)).toString(), User::DATE_OF_BIRTHD_FORMAT),
+                    databaseQuery->value(record.indexOf(ARG_USERS_ADDRESS)).toString(), databaseQuery->value(record.indexOf(ARG_USERS_PHONE_NUMBER)).toString(),
+                    databaseQuery->value(record.indexOf(ARG_USERS_PRIVILEGIES)).toInt());
+        user.ConnectCard(databaseQuery->value(record.indexOf(ARG_USERS_CARD_ID)).toString());
         users.append(user);
     }   
 
@@ -117,14 +123,16 @@ void HospitalDatabaseHelper::DeleteUser(User* user)
 {
     for(int i = 0; i < user->privilegiesCount; i++)
         user->RemovePrivilegy(((User::Privilegies)i));
-    Delete(TABLE_USERS_NAME, ARG_USERS_LOGIN+"='"+user->GetLogin()+"'");
+    Delete(TABLE_USERS_NAME, ARG_USERS_LOGIN+"='"+user->GetLogin()+"'");    
 }
 
 void HospitalDatabaseHelper::SaveSpeciality(QString spec)
-{
+{    
     if(GetSpecialities(ARG_SPECIALITIES_SPECIALITY+"='"+spec+"'").length()==0)
         Insert(TABLE_SPECIALITIES_NAME, QList<QString>{ARG_SPECIALITIES_SPECIALITY},
                                         QList<QList<QString>>{{spec}});    
+    else
+        CreateDatabaseResponse("Ця спеціальність уже існує!");
 }
 
 QList<QString> HospitalDatabaseHelper::GetSpecialities(QString condition)
@@ -154,22 +162,22 @@ void HospitalDatabaseHelper::SaveDoctor(Doctor* doctor)
     userId = GetUserId(doctor->GetUser());
     if(userId == -1) return;
 
-    DatabaseResponse* response = Select(TABLE_SPECIALITIES_NAME, QList<QString>{ARG_SPECIALITIES_ID},
-                      ARG_SPECIALITIES_SPECIALITY+"='"+doctor->GetSpeciality()+"'");    
-    if(!databaseQuery.first())
-    {
-        CreateDatabaseResponse("Професії '" + doctor->GetSpeciality() + "' не існує. Не можливо зберегти лікаря.");
-        return;
-    }else specId = databaseQuery.value(response->GetRecord().indexOf(ARG_SPECIALITIES_ID)).toInt();
+    specId = GetSpecialityId(doctor->GetSpeciality());
+    if(specId == -1) return;
 
     //Create or upadate doctor
-    response = Update(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_SPECIALITY_ID},
+    DatabaseResponse* response = Update(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_SPECIALITY_ID},
                 QList<QString>{QString::number(specId)},
                 ARG_DOCTORS_USER_ID+"="+"'"+QString::number(userId)+"'");
     if(databaseQuery.numRowsAffected() == 0)
     {
-        response = Insert(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_USER_ID, ARG_DOCTORS_SPECIALITY_ID},
-                    QList<QList<QString>>{{QString::number(userId), QString::number(specId)}});
+        response = Select(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_SPECIALITY_ID},
+                      ARG_DOCTORS_USER_ID+"="+"'"+QString::number(userId)+"'");
+        if(!databaseQuery.first())
+        {
+            response = Insert(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_USER_ID, ARG_DOCTORS_SPECIALITY_ID},
+                        QList<QList<QString>>{{QString::number(userId), QString::number(specId)}});
+        }
     }
 
     if(response->IsError()) return;    
@@ -181,20 +189,22 @@ QList<Doctor> HospitalDatabaseHelper::GetDoctors(QString condition, User* user)
 {
     DatabaseResponse *response = Select(TABLE_DOCTORS_NAME, QList<QString>{ARG_DOCTORS_ID, ARG_DOCTORS_USER_ID, ARG_DOCTORS_SPECIALITY_ID}, condition);
     QSqlRecord record = response->GetRecord();
-    QList<Doctor> doctors;
-    while(databaseQuery.next())
+    QSqlQuery* databaseQuery = new QSqlQuery(this->databaseQuery);
+    QList<Doctor> doctors;    
+    while(databaseQuery->next())
     {
-        int userId = databaseQuery.value(record.indexOf(ARG_DOCTORS_USER_ID)).toInt();
-        int specId = databaseQuery.value(record.indexOf(ARG_DOCTORS_SPECIALITY_ID)).toInt();
-        int doctorId = databaseQuery.value(record.indexOf(ARG_DOCTORS_ID)).toInt();        
+        int userId = databaseQuery->value(record.indexOf(ARG_DOCTORS_USER_ID)).toInt();
+        int specId = databaseQuery->value(record.indexOf(ARG_DOCTORS_SPECIALITY_ID)).toInt();
+        int doctorId = databaseQuery->value(record.indexOf(ARG_DOCTORS_ID)).toInt();
+        User* thisUser;
         if(user==nullptr)
         {
             QList<User> users = GetUsers(ARG_USERS_ID+"='"+QString::number(userId)+"'");
             if(users.length() > 0)
-                user = new User(users[0]);
+                thisUser = new User(users[0]);
             else
                 continue;
-        }
+        }else thisUser = user;
 
         QString specName;
         QList<QString> specNames = GetSpecialities(ARG_SPECIALITIES_ID+"='"+QString::number(specId)+"'");
@@ -206,25 +216,25 @@ QList<Doctor> HospitalDatabaseHelper::GetDoctors(QString condition, User* user)
 
         QList<WorkTime> workTimes = GetWorkTimes(doctorId);
 
-        doctors.append(*Doctor::CreateDoctor(user, specName, workTimes));
+        doctors.append(*Doctor::CreateDoctor(thisUser, specName, workTimes));
     }
     return doctors;
 }
 
 QList<Doctor> HospitalDatabaseHelper::GetDoctors(User *user)
-{
-    DatabaseResponse *response = Select(TABLE_USERS_NAME, QList<QString>{ARG_USERS_ID, ARG_USERS_LOGIN},
-                                        ARG_USERS_LOGIN+"='"+user->GetLogin()+"'");
-    if(!databaseQuery.first())
+{    
+    int userId = GetUserId(user);
+    if(userId == -1)
     {
         CreateDatabaseResponse("Користувач з логіном '" + user->GetLogin() + "' не існує. Не можливо загрузити лікаря.");
         return QList<Doctor>{};
     }else    
-        return GetDoctors(ARG_DOCTORS_USER_ID+"='"+databaseQuery.value(response->GetRecord().indexOf(ARG_USERS_ID)).toString()+"'", user);
+        return GetDoctors(ARG_DOCTORS_USER_ID+"='"+QString::number(userId)+"'", user);
 }
 
 void HospitalDatabaseHelper::DeleteDoctor(Doctor* doctor)
-{
+{    
+    if(doctor->GetUser()==nullptr) return;
     int userId = GetUserId(doctor->GetUser());
     if(userId == -1) return;
 
@@ -253,10 +263,17 @@ void HospitalDatabaseHelper::SavePatientRecord(PatientRecord* record)
            ARG_RECORDS_VISIT_DATE+"="+"'"+(record->GetVisitDateTime())->toString(PatientRecord::DATE_TIME_FORMAT)+"'");
     if(databaseQuery.numRowsAffected() == 0)
     {
-        Insert(TABLE_RECORDS_NAME, QList<QString>{ARG_RECORDS_USER_ID, ARG_RECORDS_DOCTOR_ID, ARG_RECORDS_VISIT_DATE, ARG_RECORDS_VISIT_DURATION,
-                                                  ARG_RECORDS_VISIT_DATA, ARG_RECORDS_IS_VERIFIED},
-            QList<QList<QString>>{{userIdStr, doctorIdStr, record->GetVisitDateTime()->toString(PatientRecord::DATE_TIME_FORMAT),
-                           record->GetVisitDuration()->toString(Doctor::TIME_FORMAT), *record->GetVisitInfo(), QString::number(record->IsVisited())}});
+        Select(TABLE_RECORDS_NAME, QList<QString>{ARG_RECORDS_USER_ID, ARG_RECORDS_DOCTOR_ID, ARG_RECORDS_VISIT_DATE},
+                ARG_RECORDS_USER_ID+"="+"'"+userIdStr+"' AND "+
+               ARG_RECORDS_DOCTOR_ID+"="+"'"+doctorIdStr+"' AND "+
+               ARG_RECORDS_VISIT_DATE+"="+"'"+(record->GetVisitDateTime())->toString(PatientRecord::DATE_TIME_FORMAT)+"'");
+        if(!databaseQuery.first())
+        {
+            Insert(TABLE_RECORDS_NAME, QList<QString>{ARG_RECORDS_USER_ID, ARG_RECORDS_DOCTOR_ID, ARG_RECORDS_VISIT_DATE, ARG_RECORDS_VISIT_DURATION,
+                                                      ARG_RECORDS_VISIT_DATA, ARG_RECORDS_IS_VERIFIED},
+                QList<QList<QString>>{{userIdStr, doctorIdStr, record->GetVisitDateTime()->toString(PatientRecord::DATE_TIME_FORMAT),
+                               record->GetVisitDuration()->toString(Doctor::TIME_FORMAT), *record->GetVisitInfo(), QString::number(record->IsVisited())}});
+        }
     }
 }
 
@@ -265,15 +282,16 @@ QList<PatientRecord> HospitalDatabaseHelper::GetPatientRecords(QString condition
     DatabaseResponse *response = Select(TABLE_RECORDS_NAME, QList<QString>{ARG_RECORDS_USER_ID, ARG_RECORDS_DOCTOR_ID, ARG_RECORDS_VISIT_DATE, ARG_RECORDS_VISIT_DURATION,
                                                                            ARG_RECORDS_VISIT_DATA, ARG_RECORDS_IS_VERIFIED}, condition);
     QSqlRecord sqlRecord = response->GetRecord();
+    QSqlQuery* databaseQuery = new QSqlQuery(this->databaseQuery);
     QList<PatientRecord> patientRecords;
-    while(databaseQuery.next())
+    while(databaseQuery->next())
     {
-        int userId = databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_USER_ID)).toInt();
-        int doctorId = databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_DOCTOR_ID)).toInt();
-        QDateTime dateTime = QDateTime::fromString(databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DATE)).toString(), PatientRecord::DATE_TIME_FORMAT);
-        QTime duration = QTime::fromString(databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DURATION)).toString(), Doctor::TIME_FORMAT);
-        QString data = databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DATA)).toString();
-        bool isVerified = (bool)databaseQuery.value(sqlRecord.indexOf(ARG_RECORDS_IS_VERIFIED)).toInt();
+        int userId = databaseQuery->value(sqlRecord.indexOf(ARG_RECORDS_USER_ID)).toInt();
+        int doctorId = databaseQuery->value(sqlRecord.indexOf(ARG_RECORDS_DOCTOR_ID)).toInt();
+        QDateTime* dateTime = new QDateTime(QDateTime::fromString(databaseQuery->value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DATE)).toString(), PatientRecord::DATE_TIME_FORMAT));
+        QTime* duration = new QTime(QTime::fromString(databaseQuery->value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DURATION)).toString(), Doctor::TIME_FORMAT));
+        QString* data = new QString(databaseQuery->value(sqlRecord.indexOf(ARG_RECORDS_VISIT_DATA)).toString());
+        bool isVerified = (bool)databaseQuery->value(sqlRecord.indexOf(ARG_RECORDS_IS_VERIFIED)).toInt();
 
         QList<User> users = GetUsers(ARG_USERS_ID+"='"+QString::number(userId)+"'");
         if(users.length()<=0)return QList<PatientRecord>{};
@@ -283,19 +301,19 @@ QList<PatientRecord> HospitalDatabaseHelper::GetPatientRecords(QString condition
         if(doctors.length()<=0)return QList<PatientRecord>{};
         Doctor *doctor = new Doctor(doctors[0]);
 
-        patientRecords.append(*(new PatientRecord(user, doctor, &dateTime, &duration, &data, isVerified)));
+        patientRecords.append(*(new PatientRecord(user, doctor, dateTime, duration, data, isVerified)));
     }
     return patientRecords;
 }
 
 QList<PatientRecord> HospitalDatabaseHelper::GetPatientRecords(User *user)
 {
-    return GetPatientRecords(ARG_RECORDS_USER_ID+"+'"+QString::number(GetUserId(user))+"'");
+    return GetPatientRecords(ARG_RECORDS_USER_ID+"='"+QString::number(GetUserId(user))+"' ORDER BY "+ARG_RECORDS_VISIT_DATE);
 }
 
 QList<PatientRecord> HospitalDatabaseHelper::GetPatientRecords(Doctor *doctor)
 {
-    return GetPatientRecords(ARG_RECORDS_DOCTOR_ID+"+'"+QString::number(GetDoctorId(doctor))+"'");
+    return GetPatientRecords(ARG_RECORDS_DOCTOR_ID+"='"+QString::number(GetDoctorId(doctor))+"'");
 }
 
 void HospitalDatabaseHelper::DeletePatientRecord(PatientRecord* record)
@@ -355,7 +373,7 @@ void HospitalDatabaseHelper::RefreshWorkTimes(int userId, QList<WorkTime> workTi
         if(!isContain) indexesToAdd.append(i);
     }
 
-    DatabaseResponse* response;
+    DatabaseResponse* response = nullptr;
     for(int i = 0; i < indexesToRemove.length(); i++)
     {
         WorkTime oldWorkTime = workTimesOld[indexesToRemove[i]];
@@ -365,7 +383,7 @@ void HospitalDatabaseHelper::RefreshWorkTimes(int userId, QList<WorkTime> workTi
                ARG_DOCTORS_WORKTIME_START_WORK_AT+"='"+oldWorkTime.workTime.first.toString(Doctor::TIME_FORMAT)+"' AND "+
                ARG_DOCTORS_WORKTIME_END_WORK_AT+"='"+oldWorkTime.workTime.second.toString(Doctor::TIME_FORMAT)+"'");
     }
-    if(response->IsError())
+    if(response != nullptr && response->IsError())
     {
         CreateDatabaseResponse("Неможливо видалити деякі записи про робочий час лікаря!");
     }
@@ -377,7 +395,7 @@ void HospitalDatabaseHelper::RefreshWorkTimes(int userId, QList<WorkTime> workTi
                QList<QList<QString>>{{QString::number(doctorId), newWorkTime.cabinet, QString::number(newWorkTime.workDay),
                    newWorkTime.workTime.first.toString(Doctor::TIME_FORMAT), newWorkTime.workTime.second.toString(Doctor::TIME_FORMAT)}});
     }
-    if(response->IsError())
+    if(response != nullptr && response->IsError())
     {
         CreateDatabaseResponse("Неможливо додати деякі записи про робочий час лікаря!");
     }
@@ -415,13 +433,14 @@ int HospitalDatabaseHelper::GetUserId(User* user)
     {
         CreateDatabaseResponse("Користувач з логіном '" + user->GetLogin() + "' не існує. Не можливо получити його id.");
         return -1;
-    }else
+    }else            
         userId = databaseQuery.value(response->GetRecord().indexOf(ARG_USERS_ID)).toInt();
+    return userId;
 }
 
 int HospitalDatabaseHelper::GetDoctorId(Doctor* doctor)
 {
-    GetDoctorId(GetUserId(doctor->GetUser()));
+    return GetDoctorId(GetUserId(doctor->GetUser()));
 }
 
 int HospitalDatabaseHelper::GetDoctorId(int userId)
@@ -435,4 +454,17 @@ int HospitalDatabaseHelper::GetDoctorId(int userId)
         return -1;
     }else doctorId = databaseQuery.value(response->GetRecord().indexOf(ARG_DOCTORS_ID)).toInt();
     return doctorId;
+}
+
+int HospitalDatabaseHelper::GetSpecialityId(QString spec)
+{
+    int specId;
+    DatabaseResponse* response = Select(TABLE_SPECIALITIES_NAME, QList<QString>{ARG_SPECIALITIES_ID},
+                      ARG_SPECIALITIES_SPECIALITY+"='"+spec+"'");
+    if(!databaseQuery.first())
+    {
+        CreateDatabaseResponse("Професії '" + spec + "' не існує.");
+        return -1;
+    }else specId = databaseQuery.value(response->GetRecord().indexOf(ARG_SPECIALITIES_ID)).toInt();
+    return specId;
 }

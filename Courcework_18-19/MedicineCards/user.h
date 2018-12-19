@@ -14,30 +14,29 @@ class HospitalDatabaseHelper;
 class Doctor;
 class User
 {
-    static HospitalDatabaseHelper* helper;
+    static HospitalDatabaseHelper* helper;        
 
-    const static QString DEFAULT_CARD_ID_VAL;    
-
-    Doctor* doctor;
+    Doctor* doctor = nullptr;
 
     QString cardId = DEFAULT_CARD_ID_VAL;
     bool isCardConnected = false;
 
-    QString login;
-    QString password;
-    QString surname;
-    QString name;
-    QString fatherName;
+    QString login="";
+    QString password="";
+    QString surname="";
+    QString name="";
+    QString fatherName="";
     QDate dateOfBirthd;
-    QString address;
-    QString phoneNumber;
-    int privilegies;
+    QString address="";
+    QString phoneNumber="";
+    int privilegies=0;
 
     bool isLogined;    
 
 public:
     const static int privilegiesCount = 4;
     const static QString DATE_OF_BIRTHD_FORMAT;
+    const static QString DEFAULT_CARD_ID_VAL;
     enum Privilegies{ Admin=0, Recorder=1, Doctor=2, Patient=3 };
 
     User(User *user);
@@ -85,6 +84,8 @@ public:
 
     bool SaveToDB();
     bool LoadFromDB();
+
+    QString ToShortStr();
 
 private:
     void AddPrivilegy(Privilegies privilegy);

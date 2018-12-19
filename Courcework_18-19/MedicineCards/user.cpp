@@ -31,6 +31,8 @@ User::User(User *user)
     ConnectCard(user->GetCardId());
     privilegies = user->GetPrivilegies();
     isLogined = user->IsLogined();
+    if(user->IsPrivilegyExist(Privilegies::Doctor))
+        AddPrivilegyDoctor();
 }
 
 User::User(QString cardId)
@@ -68,7 +70,8 @@ void User::ConnectCard(QString id, bool isCheckUnique)
     if(isCheckUnique)
     {
         if(helper != nullptr)
-            isUnique = (helper->GetUsers(HospitalDatabaseHelper::ARG_USERS_CARD_ID+"="+"'"+id+"'").length() == 0);
+            isUnique = (helper->GetUsers(HospitalDatabaseHelper::ARG_USERS_CARD_ID+"="+"'"+id+"' AND "
+                                         +HospitalDatabaseHelper::ARG_USERS_LOGIN+"!='"+login+"'").length() == 0);
         else
             isUnique = false;
     }
@@ -126,14 +129,21 @@ void User::AddPrivilegyDoctor(QString speciality, QList<WorkTime> workTimes)
     bool result = true;
     QList<class Doctor> doctors = helper->GetDoctors(this);
     if(doctors.length()!=0)
-        doctor = new class Doctor(&doctors[0]);
+    {
+        QString spec = doctors[0].GetSpeciality();
+        QList<WorkTime> workTs = doctors[0].GetWorkTimes();
+        if(speciality != "")
+            spec = speciality;
+        if(workTimes.length()!=0)
+            workTs = workTimes;
+        doctor = new class Doctor(doctors[0].GetUser(), spec, workTs);
+    }
     else
     {
         if(speciality != "" && workTimes.length()!=0)
         {
             doctor = Doctor::CreateDoctor(this, speciality, workTimes);
-            if(doctor==nullptr) result = false;
-            if(!doctor->SaveToDB()) result = false;
+            if(doctor==nullptr) result = false;            
         }else result = false;
     }
     if(!result)
@@ -149,6 +159,8 @@ void User::AddPrivilegyPatient()
 
 void User::RemovePrivilegy(Privilegies privilegy)
 {
+    if(privilegy == Privilegies::Doctor && doctor!=nullptr)
+        helper->DeleteDoctor(doctor);
     privilegies &= ~(1 << privilegy);
 }
 
@@ -199,7 +211,14 @@ bool User::SaveToDB()
     if(helper == nullptr) return false;
 
     helper->SaveUser(this);
-    return !helper->IsErrorExists();
+    bool isSuccess = !helper->IsErrorExists();
+    if(doctor != nullptr && !doctor->SaveToDB())
+    {
+        RemovePrivilegy(Privilegies::Doctor);
+        //helper->GetError();
+    }
+
+    return isSuccess;
 }
 
 bool User::LoadFromDB()
@@ -225,6 +244,13 @@ bool User::LoadFromDB()
     SetPhoneNumber(user->GetPhoneNumber());
     privilegies = user->GetPrivilegies();
     //delete user;
+    if(IsPrivilegyExist(Privilegies::Doctor))
+        AddPrivilegyDoctor();
 
     return !helper->IsErrorExists();
+}
+
+QString User::ToShortStr()
+{
+    return surname + " " + name.at(0) + ". " + fatherName.at(0) + ".";
 }

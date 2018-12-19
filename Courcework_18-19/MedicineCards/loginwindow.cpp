@@ -1,4 +1,5 @@
 #include "loginwindow.h"
+#include "mainwindow.h"
 #include "ui_loginwindow.h"
 #include "user.h"
 
@@ -18,16 +19,25 @@ LoginWindow::LoginWindow(SerialCommunicationWithCard* serial, QWidget *parent) :
 
     nowOperatingWin = this;
     onCardConnected = [](QString cardId)-> void{
-        User user(cardId);
-        if(user.IsLogined())
+        User *user = new User(cardId);
+        if(user->IsPrivilegyExist(User::Privilegies::Admin) || user->IsPrivilegyExist(User::Privilegies::Doctor) ||
+                user->IsPrivilegyExist(User::Privilegies::Recorder))
+        {
+            if(user->IsLogined())
+            {
+                nowOperatingWin->CloseAndStart(user);
+                QMessageBox mBox;
+                mBox.setText("Успішний вхід за допомогою картки!");
+                mBox.exec();
+            }else{
+                QMessageBox mBox;
+                mBox.setText("Не вдалось увійти за допомогою картки!");
+                mBox.exec();
+            }
+        }else
         {
             QMessageBox mBox;
-            mBox.setText("Успішний вхід за допомогою картки!");
-            mBox.exec();
-            nowOperatingWin->Close();
-        }else{
-            QMessageBox mBox;
-            mBox.setText("Не вдалось увійти за допомогою картки!");
+            mBox.setText("Помилка входу! Пацієнт не може входити в систему.");
             mBox.exec();
         }
     };
@@ -42,13 +52,13 @@ LoginWindow::~LoginWindow()
 void LoginWindow::LoginClick()
 {
     QMessageBox mBox;    
-    User user(ui->lineEditLogin->text(), ui->lineEditPassword->text());
-    if(user.IsPrivilegyExist(User::Privilegies::Admin) || user.IsPrivilegyExist(User::Privilegies::Doctor) ||
-            user.IsPrivilegyExist(User::Privilegies::Recorder))
+    User *user = new User(ui->lineEditLogin->text(), ui->lineEditPassword->text());
+    if(user->IsPrivilegyExist(User::Privilegies::Admin) || user->IsPrivilegyExist(User::Privilegies::Doctor) ||
+            user->IsPrivilegyExist(User::Privilegies::Recorder))
     {
-        if(user.IsLogined())
-        {
-            close();
+        if(user->IsLogined())
+        {            
+            CloseAndStart(user);
         }else
         {
             mBox.setText("Помилка входу! Перевірте логін та пароль.");
@@ -61,8 +71,10 @@ void LoginWindow::LoginClick()
     }
 }
 
-void LoginWindow::Close()
+void LoginWindow::CloseAndStart(User* user)
 {
+    MainWindow *wind = new MainWindow(serial, user);
+    wind->show();
     serial->RemoveCardAddListener(onCardConnected);
     close();
 }
