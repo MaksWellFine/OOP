@@ -66,7 +66,11 @@ void MainWindow::TabChanged()
 {
     userInfoWidg->ShowUserInfo(mainUser, true);
     if(ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Розклад")
+    {
         schedWidg->SetInfoForShow(mainUser->GetDoctor(), new QDate(QDate::currentDate()));
+        schedWidg->SetShowState(true);
+    }else
+        schedWidg->SetShowState(false);
 
     if(ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Журнал")
         registWidg->HardReload();

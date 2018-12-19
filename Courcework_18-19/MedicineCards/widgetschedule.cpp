@@ -17,12 +17,15 @@ WidgetSchedule::WidgetSchedule(QWidget *parent, SerialCommunicationWithCard* ser
 
     ui->tableSchedule->verticalHeader()->setStretchLastSection(false);
 
-    nowOperatingWidg = this;
     if(serial != nullptr)
     {
+        nowOperatingWidg = this;
         serial->AddCardAddListener([](QString cardId)->void{
-            User* user = new User(cardId);
-            nowOperatingWidg->OnPatientAccepting(user);
+            if(nowOperatingWidg->isShowed)
+            {
+                User* user = new User(cardId);
+                nowOperatingWidg->OnPatientAccepting(user);
+            }
         });
 
         QTimer* timer = new QTimer(this);
@@ -259,4 +262,9 @@ void WidgetSchedule::OnTimer()
 User* WidgetSchedule::GetSelectedUser()
 {
     return selectedPatient;
+}
+
+void WidgetSchedule::SetShowState(bool isShow)
+{
+    isShowed = isShow;
 }

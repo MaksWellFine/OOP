@@ -32,6 +32,7 @@ private:
 
     Ui::WidgetSchedule *ui;
     static WidgetSchedule* nowOperatingWidg;
+    bool isShowed = true;
 
     User* selectedPatient = nullptr;
     QTime* oldTimeSelected = new QTime(0,0,0);
@@ -50,6 +51,7 @@ public:
     QTime* GetSelectedTime();
     QTableWidgetItem* GetSelectedPersonItem();
     User* GetSelectedUser();
+    void SetShowState(bool isShow);
 
 private slots:
     void OnTimer();
