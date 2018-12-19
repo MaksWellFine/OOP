@@ -276,7 +276,8 @@ void RegistrationWindow::SaveClick()
 
 void RegistrationWindow::CancelClick()
 {
-    serial->RemoveCardAddListener(onCardConnected);
+    if(serial != nullptr)
+        serial->RemoveCardAddListener(onCardConnected);
     close();
 }
 

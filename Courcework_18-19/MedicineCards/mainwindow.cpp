@@ -28,7 +28,7 @@ MainWindow::MainWindow(SerialCommunicationWithCard* serial, User* user, QWidget 
         schedWidg = new WidgetSchedule(this, serial);
         ui->listWidgets->addTab(schedWidg, "Розклад");
         connect(schedWidg, &WidgetSchedule::OnPatientSelect, userInfoWidg, &UserInfo::EditingState);
-        connect(userInfoWidg, & UserInfo::ShowEditRecordWindow, this, &MainWindow::ShowEditRecordsWindow);
+        connect(userInfoWidg, &UserInfo::ShowEditRecordWindow, this, &MainWindow::ShowEditRecordsWindow);
     }
 
     if(user->IsPrivilegyExist(User::Privilegies::Admin))
@@ -63,16 +63,19 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::TabChanged()
-{
+{    
     userInfoWidg->ShowUserInfo(mainUser, true);
-    if(ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Розклад")
+    if(schedWidg != nullptr)
     {
-        schedWidg->SetInfoForShow(mainUser->GetDoctor(), new QDate(QDate::currentDate()));
-        schedWidg->SetShowState(true);
-    }else
-        schedWidg->SetShowState(false);
+        if(ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Розклад")
+        {
+            schedWidg->SetInfoForShow(mainUser->GetDoctor(), new QDate(QDate::currentDate()));
+            schedWidg->SetShowState(true);
+        }else
+            schedWidg->SetShowState(false);
+    }
 
-    if(ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Журнал")
+    if(registWidg != nullptr && ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Журнал")
         registWidg->HardReload();
 }
 
@@ -88,13 +91,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::OnTimer()
 {
-    if(ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Розклад")
+    if(schedWidg != nullptr && ui->listWidgets->tabText(ui->listWidgets->currentIndex()) == "Розклад")
         schedWidg->SetInfoForShow(mainUser->GetDoctor(), new QDate(QDate::currentDate()));
 }
 
 void MainWindow::ShowEditRecordsWindow()
 {
-    if(schedWidg->GetSelectedUser()!=nullptr)
+    if(schedWidg != nullptr && schedWidg->GetSelectedUser()!=nullptr)
     {
         if(!isRecordsEditWinShow)
         {
@@ -115,5 +118,6 @@ void MainWindow::ShowEditRecordsWindow()
 void MainWindow::OnClosedEditRecordsWindow()
 {
     isRecordsEditWinShow = false;
-    disconnect(recordsEditWin, &PatientRecordsWindow::onClose, this, &MainWindow::OnClosedEditRecordsWindow);
+    if(recordsEditWin != nullptr)
+        disconnect(recordsEditWin, &PatientRecordsWindow::onClose, this, &MainWindow::OnClosedEditRecordsWindow);
 }
